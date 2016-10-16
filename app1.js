@@ -11,7 +11,7 @@ var utf8         = { encoding: 'utf8' };
 var serverConfig = express();
 var server       = http.createServer(serverConfig);
 
-var manager = socket.listen(server);
+var manager = socket.listen(server, { resource: '/js' });
 
 function exitProcess() {
   process.exit();
