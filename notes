@@ -1,0 +1,151 @@
+configureServer = require('express')();
+server          = http.createServer(configureServer);
+
+routes.configRoutes(configureServer, server);
+---------------------------------------------
+  configureServer.get('/', function (request, response) {
+    response.redirect('/spa.html');
+  });
+  require('./chat').connect(server);
+  ----------------------------------
+    var manager = require('socket.io').listen(server);
+    manager
+      .set('blacklist', [])
+      .of('/chat') //=> `new SocketNamespace(this, '/chat')`
+      .on('connection', function (socket) {
+        socket.on('adduser', function (user) { .. })
+      });
+    return manager;
+
+
+server.listen(3000);
+// ------------------------------------------------------------------------
+
+creating a new Manager
+  creates a new `Static`
+    which builds the static js file for browser clients
+
+
+// ------------------------------------------------------------------------
+
+app['get'] = function (path) {
+  return this.set(path);
+  this._router['get'].apply(this._router, arguments);
+  return this;
+};
+
+// ------------------------------------------------------------------------
+
+var express = function createApplication() {
+  var app = connect(); // Nothing is used.
+  utils.merge(app, proto);
+  app.request = { __proto__: require('./request') };
+  app.response = { __proto__: require('./response') };
+  app.init();
+  return app;
+};
+
+express.configure = function (env, fn) {
+  var envs = 'all';
+  if (envs === 'all' || ...) fn.call(this);
+  return this;
+};
+
+var connect = function createServer() {
+  function app(req, res, next) {
+    app.handle(req, res, next);
+  }
+  utils.merge(app, proto);
+  var EventEmitter = require('events').EventEmitter;
+  utils.merge(app, EventEmitter.prototype);
+  app.route = '/';
+  app.stack = [];
+  for (var i = 0; i < arguments.length; ++i) {
+    app.use(arguments[i]);
+  }
+  return app;
+};
+
+var proto = {};
+proto.handle = function (req, res, out) {
+  var layer = this.stack[0];
+  if (!layer && res.headerSent) {
+    if (out) return out(undefined);
+    res.statusCode = 404;
+    res.setHeader('Content-Type', 'text/plain');
+    if (req.method === 'HEAD') return res.end();
+    res.end('Cannot ' + req.method + ' ' + req.originalUrl);
+  } else {
+    var path = utils.parseUrl(req).pathname;
+    if (path.toLowerCase().indexOf(layer.route.toLowerCase())) return next(err);
+
+  ...
+};
+
+proto.use = function (route, fn) {
+  if (typeof route !== 'string') {
+    fn = route;
+    route = '/';
+  }
+  if (typeof fn.handle === 'function') {
+    var server = fn;
+    fn.route = route;
+    fn = function (req, res, next) { // Ignore the definition of `fn` if it has a `handle` method.
+      server.handle(req, res, next);
+    };
+  }
+  if (fn instanceof http.Server) {
+    fn = fn.listeners('request')[0];
+  }
+  this.stack.push({ route: route, handle: fn });
+  return this;
+};
+
+connect.static = function (root, options) {
+  return function static(req, res, next) {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+    var path = parse(req).pathname;
+    var pause = utils.pause(req);
+    function resume() {
+      next();
+      pause.resume():
+    }
+    function directory() {
+      if (!!options.redirect) return resume();
+      ...
+      res.statusCode = 301;
+      res.setHeader('Location', pathname + '/');
+      res.end('Redirecting to ...');
+    }
+    send(req, path)
+      .maxage(options.maxAge || 0)
+      .root(root)
+      .index(options.index || 'index.html')
+      .hidden(options.hidden)
+      .on('error', onError)
+      .on('directory', directory)
+      .pipe(res);
+  };
+};
+connect.bodyParser = function (optons) {
+  return function bodyParser(req, res, next) {
+    _json(req, res, function (err) {
+      if (err) return next(err);
+      _urlencoded(req, res, function (err) {
+        if (err) return next(err);
+        _multipart(req, res, next)));
+  };
+}
+
+function send(req, path, options) {
+  return new SendStream(req, path, options);
+}
+function SendStream(req, path, options) {
+  var self = this;
+  this.req = req;
+  this.path = path;
+  this.options = options || {};
+  this.maxage(0);
+  this.hidden(false);
+  this.index('index.html');
+}

@@ -1,31 +1,20 @@
 var createComponent     = require('./ribosome/createComponent');
 var _createDivComponent = require('./ribosome/_createDivComponent');
 var DIV                 = require('./ribosome/elements').DIV;
-var H1                  = require('./ribosome/elements').H1;
-var P                   = require('./ribosome/elements').P;
 var TEXT                = require('./ribosome/TEXT');
 var SUBMIT              = require('./ribosome/SUBMIT');
 
-var SHELL_HEAD = _createDivComponent('spa-shell-head');
-var ACCOUNT = _createDivComponent('spa-shell-head-acct');
-var LOGO    = _createDivComponent('spa-shell-head-logo');
-var MAIN    = _createDivComponent('spa-shell-main');
-var NAV     = _createDivComponent('spa-shell-main-nav');
-var CONTENT = _createDivComponent('spa-shell-main-content');
-var FOOT    = _createDivComponent('spa-shell-foot');
-var MODAL   = _createDivComponent('spa-shell-modal');
-
 var CHAT      = _createDivComponent('spa-chat');
 var CHAT_HEAD = _createDivComponent('spa-chat-head');
-var TOGGLE = _createDivComponent('spa-chat-head-toggle');
-var TITLE  = _createDivComponent('spa-chat-head-title');
-var CLOSER = _createDivComponent('spa-chat-closer');
-var LIST   = _createDivComponent('spa-chat-list');
-var BOX    = _createDivComponent('spa-chat-list-box');
-var NOTE   = _createDivComponent('spa-chat-list-note');
-var MSG    = _createDivComponent('spa-chat-msg');
-var MSG_LOG = _createDivComponent('spa-chat-msg-log');
-var MSG_IN  = _createDivComponent('spa-chat-msg-in');
+var TOGGLE    = _createDivComponent('spa-chat-head-toggle');
+var TITLE     = _createDivComponent('spa-chat-head-title');
+var CLOSER    = _createDivComponent('spa-chat-closer');
+var LIST      = _createDivComponent('spa-chat-list');
+var BOX       = _createDivComponent('spa-chat-list-box');
+var NOTE      = _createDivComponent('spa-chat-list-note');
+var MSG       = _createDivComponent('spa-chat-msg');
+var MSG_LOG   = _createDivComponent('spa-chat-msg-log');
+var MSG_IN    = _createDivComponent('spa-chat-msg-in');
 
 //var SIZER = _createDivComponent('spa-chat-sizer');
 
@@ -127,7 +116,7 @@ function getMessage(value) {
   }
 }
 
-function createChatConsole(config) {
+module.exports = function createChatConsole(config) {
   //var chatConnectionMaybe = config.chatConnectionMaybe;
   //var title = chatConnectionMaybe.chatConnection
   //  ? 'Chat with ' + chatConnectionMaybe.chatConnection.user.name
@@ -174,37 +163,4 @@ function createChatConsole(config) {
             TEXT(),
             SUBMIT({ style: { display: 'none' }}),
             MSG_SEND('send'))))));
-}
-
-module.exports = function createSpa() {
- return DIV(
-   { id: 'spa' },
-   SHELL_HEAD(
-     LOGO(
-       H1(null, 'SPA'),
-       P(null, 'javascript end to end')),
-     ACCOUNT('secundus12')),
-   MAIN(
-     NAV(
-       DIV(
-         {
-           classes: {
-             'spa-avtr-box'  : true,
-             'spa-x-is-user' : true 
-           },
-           attribs: {
-             'data-id' : '5800448895d827132315c186',
-             'title'   : 'secundus12'
-           },
-           style: {
-             top                : '25px',
-             left               : '25px',
-             'background-color' : 'rgb(136, 255, 136)'
-           }
-         },
-         'secundus12')),
-     CONTENT()),
-   FOOT(),
-   MODAL(),
-   createChatConsole());
 };

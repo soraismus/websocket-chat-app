@@ -5,13 +5,13 @@
 //var subscribe           = require('./subscribe');
 
 //var initializeView      = require('../views/createChatConsole');
-var createChatConsole = require('../views/createChatConsole');
-var initializeView    = require('../views/initialize');
+var createSpa      = require('../views/createSpa');
+var initializeView = require('../views/initialize');
 
 function initialize(config) {
   var nodeId = config.nodeId;
 
-  var viewModel = createChatConsole();
+  var viewModel = createSpa();
 
   //var attachmentPoint = document.getElementById(nodeId);
   var attachmentPoint = document.getElementsByTagName('body')[0];
