@@ -9,11 +9,50 @@ var onUserUpdate   = function (user)  {};
 var onListChange   = function (users) {};
 var onChatUpdate   = function (value) {};
 
+/*
+function render() { }
+function getModel(action) { var model = {}; return model; } 
+function interpretKeydown(event) { var action = {}; return action; } 
+function initializeControl(subscribe, render) {
+  var handleEvent = function (transformEventToCommand) {
+    return function (event) {
+      render(getModel(transformEventToCommand(event)));
+    };
+  }
+
+  subscribe('keydown', handleEvent(interpretKeydown));
+}
+*/
+
 function initializeControl(
   //subscribeElement,
   //subscribeChatSocket,
   render,
-  config) {
+  config,
+  events,
+  eventEmitters,
+  socketClient) {
+
+  function onToggleSession(event) {}
+
+  var sessionConsole = document.getElementsByClassname('spa-shell-head-acct');
+  sessionConsole.addEventListener('mouseup', onToggleSession);
+
+  subscribe(events.sessionToggle, toggleSession);
+
+  //    $acct      : $container.find('.spa-shell-head-acct'),
+  // onTapAcct = function ( event ) {
+  //  var acct_text, user_name, user = spa.model.people.get_user();
+  //  if ( user.get_is_anon() ) {
+  //    user_name = prompt( 'Please sign-in' );
+  //    spa.model.people.login( user_name );
+  //    jqueryMap.$acct.text( '... processing ...' );
+  //  }
+  //  else {
+  //   spa.model.people.logout();
+  //  }
+  //  return false;
+  //};
 
   /*
   var handleEvent = function (getAction) {

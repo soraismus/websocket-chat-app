@@ -1,7 +1,7 @@
 module.exports = {
   entry: './client/initialization/_initialize.js',
   output: {
-    path: './server/public',
+    path: './public',
     filename: 'index.js'
   },
   node: {

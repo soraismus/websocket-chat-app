@@ -10,13 +10,9 @@ var initializeView = require('../views/initialize');
 
 function initialize(config) {
   var nodeId = config.nodeId;
-
   var viewModel = createSpa();
-
-  //var attachmentPoint = document.getElementById(nodeId);
   var attachmentPoint = document.getElementsByTagName('body')[0];
 
-  //function initializeView(attachToDom, viewModel) {
   initializeView(
     function attachToDom(element) {
       attachmentPoint.appendChild(element);
