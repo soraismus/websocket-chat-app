@@ -8,6 +8,18 @@
 var createSpa      = require('../views/createSpa');
 var initializeView = require('../views/initialize');
 
+var getRouteElement = require('reactive-aspen-route');
+var Route = getRouteElement(function (value) {
+  console.log(value);
+});
+
+function getHashRoute(chatConsoleState) {
+  switch (chatConsoleState) {
+    case 'closed': return '/closed';
+    default:       return '/open';
+  }
+};
+
 function initialize(config) {
   var nodeId = config.nodeId;
   var viewModel = createSpa();
@@ -23,6 +35,16 @@ function initialize(config) {
   //  subscribe,
   //  render(viewModel, attachmentPoint.childNodes[0], controlConfig, _scroll),
   //  controlConfig);
+
+  var chatConsoleState = config.chatConsoleState;
+
+  chatConsoleState = 'open';
+
+  Route({
+    hash         : getHashRoute(chatConsoleState),
+    onHashChange : true
+  });
+
 }
 
 module.exports = initialize;

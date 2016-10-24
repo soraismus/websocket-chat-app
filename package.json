@@ -13,6 +13,7 @@
     "webpack": "^1.13.2"
   },
   "dependencies": {
+    "reactive-aspen-route": "0.0.1",
     "socket.io": "^0.9.17",
     "socket.io-client": "^0.9.16"
   }
