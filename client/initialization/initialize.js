@@ -13,16 +13,16 @@ var Route = getRouteElement(function (value) {
   console.log(value);
 });
 
-function getHashRoute(chatConsoleState) {
+var getHashRoute = function (chatConsoleState) {
   switch (chatConsoleState) {
     case 'closed': return '/closed';
     default:       return '/open';
   }
 };
 
-function initialize(config) {
+var initialize = function (config) {
   var nodeId = config.nodeId;
-  var viewModel = createSpa();
+  var viewModel = createSpa(config);
   var attachmentPoint = document.getElementsByTagName('body')[0];
 
   initializeView(
@@ -36,12 +36,8 @@ function initialize(config) {
   //  render(viewModel, attachmentPoint.childNodes[0], controlConfig, _scroll),
   //  controlConfig);
 
-  var chatConsoleState = config.chatConsoleState;
-
-  chatConsoleState = 'open';
-
   Route({
-    hash         : getHashRoute(chatConsoleState),
+    hash         : getHashRoute(config.chatConsoleState),
     onHashChange : true
   });
 

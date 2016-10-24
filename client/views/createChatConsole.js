@@ -78,16 +78,15 @@ var createChatConsole = function (config) {
   //var sliderGlyph = getSliderGlyph(sliderState);
   var title = 'Chat';
   var sliderGlyph = getSliderGlyph(SliderState.OPEN);
-
-  //var users = config.users;
-  //var packets = config.packets;
-  var users = [];
-  var packets = [];
+  var chatConsoleState = config.chatConsoleState;
+  var height = chatConsoleState === SliderState.OPEN
+    ? 243.243244171143
+    : 26.6666;
 
   return DIV(
     {
       classes : { 'spa-chat': true },
-      style   : { height: '243.243244171143px' }
+      style   : { height: height + 'px' }
     },
     CHAT_HEAD(
       DIV(
@@ -98,7 +97,7 @@ var createChatConsole = function (config) {
         sliderGlyph),
       TITLE(title)),
     CLOSER('x'),
-    SIZER({ packets: packets }));
+    SIZER({ packets: config.packets, users: config.users }));
 };
 
 module.exports = createChatConsole;

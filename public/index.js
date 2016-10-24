@@ -46,7 +46,37 @@
 
 	'use strict';
 	var initialize = __webpack_require__(1);
-	initialize({ nodeId: 'spa' });
+
+	var PacketState = {
+	  CHAT_CONNECTION : 'chat-connection',
+	  DEPARTURE_ALERT : 'departure-alert',
+	  ME              : 'me',
+	  MESSAGE         : 'message'
+	};
+
+	var packets = [];
+	packets.push({ type: PacketState.CHAT_CONNECTION, userName: 'CharlesV'                                 });
+	packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Hello, world."      });
+	packets.push({ type: PacketState.ME,              userName: 'HenryVIII', message: "Hello, world."      });
+	packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Guten tag, Welt."   });
+	packets.push({ type: PacketState.ME,              userName: 'HenryVIII', message: "Bonjour, le monde." });
+	packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Bonjour, le monde." });
+
+	var users = [];
+	users.push({ id: 0, name: 'TheFonze'   });
+	users.push({ id: 1, name: 'RalphNader' });
+	users.push({ id: 2, name: 'DarthVader' });
+
+	var chatConsoleState = 'open';
+
+	var config = {
+	  chatConsoleState : chatConsoleState,
+	  nodeId           : 'spa',
+	  packets          : packets,
+	  users            : users
+	};
+
+	initialize(config);
 
 	var socketClient = __webpack_require__(16);
 	if (!!socketClient) { console.log('SOCKET CLIENT'); }
@@ -71,16 +101,16 @@
 	  console.log(value);
 	});
 
-	function getHashRoute(chatConsoleState) {
+	var getHashRoute = function (chatConsoleState) {
 	  switch (chatConsoleState) {
 	    case 'closed': return '/closed';
 	    default:       return '/open';
 	  }
 	};
 
-	function initialize(config) {
+	var initialize = function (config) {
 	  var nodeId = config.nodeId;
-	  var viewModel = createSpa();
+	  var viewModel = createSpa(config);
 	  var attachmentPoint = document.getElementsByTagName('body')[0];
 
 	  initializeView(
@@ -94,12 +124,8 @@
 	  //  render(viewModel, attachmentPoint.childNodes[0], controlConfig, _scroll),
 	  //  controlConfig);
 
-	  var chatConsoleState = config.chatConsoleState;
-
-	  chatConsoleState = 'open';
-
 	  Route({
-	    hash         : getHashRoute(chatConsoleState),
+	    hash         : getHashRoute(config.chatConsoleState),
 	    onHashChange : true
 	  });
 
@@ -127,7 +153,7 @@
 	var FOOT       = _createDivComponent('spa-shell-foot');
 	var MODAL      = _createDivComponent('spa-shell-modal');
 
-	module.exports = function createSpa() {
+	module.exports = function createSpa(config) {
 	 return DIV(
 	   { id: 'spa' },
 	   SHELL_HEAD(
@@ -157,7 +183,11 @@
 	     CONTENT()),
 	   FOOT(),
 	   MODAL(),
-	   createChatConsole());
+	   createChatConsole({
+	     chatConsoleState : config.chatConsoleState,
+	     packets          : config.packets,
+	     users            : config.users
+	   }));
 	};
 
 
@@ -378,16 +408,15 @@
 	  //var sliderGlyph = getSliderGlyph(sliderState);
 	  var title = 'Chat';
 	  var sliderGlyph = getSliderGlyph(SliderState.OPEN);
-
-	  //var users = config.users;
-	  //var packets = config.packets;
-	  var users = [];
-	  var packets = [];
+	  var chatConsoleState = config.chatConsoleState;
+	  var height = chatConsoleState === SliderState.OPEN
+	    ? 243.243244171143
+	    : 26.6666;
 
 	  return DIV(
 	    {
 	      classes : { 'spa-chat': true },
-	      style   : { height: '243.243244171143px' }
+	      style   : { height: height + 'px' }
 	    },
 	    CHAT_HEAD(
 	      DIV(
@@ -398,7 +427,7 @@
 	        sliderGlyph),
 	      TITLE(title)),
 	    CLOSER('x'),
-	    SIZER({ packets: packets }));
+	    SIZER({ packets: config.packets, users: config.users }));
 	};
 
 	module.exports = createChatConsole;
@@ -528,23 +557,10 @@
 	  var packets = config.packets;
 	  var users = config.users;
 
-	  packets = [];
-	  packets.push({ type: PacketState.CHAT_CONNECTION, userName: 'CharlesV'                                 });
-	  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Hello, world."      });
-	  packets.push({ type: PacketState.ME,              userName: 'HenryVIII', message: "Hello, world."      });
-	  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Guten tag, Welt."   });
-	  packets.push({ type: PacketState.ME,              userName: 'HenryVIII', message: "Bonjour, le monde." });
-	  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Bonjour, le monde." });
-
-	  users = [];
-	  users.push({ id: 0, name: 'TheFonze'   });
-	  users.push({ id: 1, name: 'RalphNader' });
-	  users.push({ id: 2, name: 'DarthVader' });
-
 	  return DIV(
 	    {
-	        classes : { 'spa-chat-sizer': true },
-	        style   : { height: '216.216217041016px' }
+	      classes : { 'spa-chat-sizer': true },
+	      style   : { height: '216.216217041016px' }
 	    },
 	    LIST(
 	      BOX(

@@ -13,7 +13,7 @@ var CONTENT    = _createDivComponent('spa-shell-main-content');
 var FOOT       = _createDivComponent('spa-shell-foot');
 var MODAL      = _createDivComponent('spa-shell-modal');
 
-module.exports = function createSpa() {
+module.exports = function createSpa(config) {
  return DIV(
    { id: 'spa' },
    SHELL_HEAD(
@@ -43,5 +43,9 @@ module.exports = function createSpa() {
      CONTENT()),
    FOOT(),
    MODAL(),
-   createChatConsole());
+   createChatConsole({
+     chatConsoleState : config.chatConsoleState,
+     packets          : config.packets,
+     users            : config.users
+   }));
 };

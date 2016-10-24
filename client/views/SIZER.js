@@ -63,23 +63,10 @@ var SIZER = function (config) {
   var packets = config.packets;
   var users = config.users;
 
-  packets = [];
-  packets.push({ type: PacketState.CHAT_CONNECTION, userName: 'CharlesV'                                 });
-  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Hello, world."      });
-  packets.push({ type: PacketState.ME,              userName: 'HenryVIII', message: "Hello, world."      });
-  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Guten tag, Welt."   });
-  packets.push({ type: PacketState.ME,              userName: 'HenryVIII', message: "Bonjour, le monde." });
-  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Bonjour, le monde." });
-
-  users = [];
-  users.push({ id: 0, name: 'TheFonze'   });
-  users.push({ id: 1, name: 'RalphNader' });
-  users.push({ id: 2, name: 'DarthVader' });
-
   return DIV(
     {
-        classes : { 'spa-chat-sizer': true },
-        style   : { height: '216.216217041016px' }
+      classes : { 'spa-chat-sizer': true },
+      style   : { height: '216.216217041016px' }
     },
     LIST(
       BOX(
