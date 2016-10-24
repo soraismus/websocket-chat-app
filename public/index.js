@@ -78,7 +78,7 @@
 
 	initialize(config);
 
-	var socketClient = __webpack_require__(16);
+	var socketClient = __webpack_require__(21);
 	if (!!socketClient) { console.log('SOCKET CLIENT'); }
 
 
@@ -88,15 +88,14 @@
 
 	//var getInitialModel     = require('./models/getInitialModel');
 	//var getInitialViewModel = require('./view/recreateConsole');
-	//var initializeControl   = require('./control/initializeControl');
-	//var render              = require('./render');
-	//var subscribe           = require('./subscribe');
+	var initializeControl   = __webpack_require__(2);
+	var render              = __webpack_require__(3);
 
 	//var initializeView      = require('../views/createChatConsole');
-	var createSpa      = __webpack_require__(2);
-	var initializeView = __webpack_require__(12);
+	var createSpa      = __webpack_require__(7);
+	var initializeView = __webpack_require__(18);
 
-	var getRouteElement = __webpack_require__(14);
+	var getRouteElement = __webpack_require__(19);
 	var Route = getRouteElement(function (value) {
 	  console.log(value);
 	});
@@ -110,6 +109,7 @@
 
 	var initialize = function (config) {
 	  var nodeId = config.nodeId;
+	  //var initialModel = getInitialModel();
 	  var viewModel = createSpa(config);
 	  var attachmentPoint = document.getElementsByTagName('body')[0];
 
@@ -119,10 +119,26 @@
 	    },
 	    viewModel);
 
-	  //initializeControl(
-	  //  subscribe,
-	  //  render(viewModel, attachmentPoint.childNodes[0], controlConfig, _scroll),
-	  //  controlConfig);
+	  var getAttachmentPoint = function () {
+	    return attachmentPoint.childNodes[1];
+	    // return attachmentPoint.getElementById(nodeId);
+	  };
+
+	  var initialModel = {
+	    chatConsoleState : 'open',
+	    packets          : [],
+	    users            : []
+	  };
+
+	  var controlConfig = Object.seal({
+	    appState : initialModel
+	  });
+
+	  var eventPublishers = {};
+
+	  initializeControl(
+	    eventPublishers,
+	    render(viewModel, getAttachmentPoint, controlConfig));
 
 	  Route({
 	    hash         : getHashRoute(config.chatConsoleState),
@@ -136,13 +152,307 @@
 
 /***/ },
 /* 2 */
+/***/ function(module, exports) {
+
+	// publishers.js :-> register all event emitters/listeners
+	// commanders.js :-> adapt all events to a uniform command API.
+	//   'keydown' event -> intepretKeydown(event)
+	// intializeControl.js :-> instruct all commanders to
+	//   map their commands to AppState
+	//   and then to render that app state
+	//   -- or to daisychain their commands by emitting to
+	//      another publisher/commander (??)
+
+	var initializeControl = function (commanders, render, notify) {
+	  // publishers['keydown'].subscribe(render(interpretKeydown));
+	  // publishers['avatarCreation'].subscribe(notify('persist'));
+	  // publishers['persist'].subscribe(render(interpretPersistedData));
+
+	  /*
+	  var getElement = function (elementId) {
+	    return document.getElementById(elementId);
+	  };
+	  var listen = function (eventType, eventHandler) {
+	    getElement(id0).addEventListener(eventType, eventHandler);
+	  };
+	  subscribe(listen, 'keydown', render(interpretKeydown));
+	  */
+
+	  // subscribe('keydown', render(interpretKeydown));
+
+	  /*
+	  subscribe('keydown', handleEvent(interpretKeydown));
+	  var onToggleSession = function (event) {};
+	  var sessionConsole =
+	    document.getElementsByClassname('spa-shell-head-acct');
+	  sessionConsole.addEventListener('mouseup', onToggleSession);
+	  subscribe(events.sessionToggle, toggleSession);
+	  */
+
+	  /*
+	  subscribeElement(getAvatarElements, 'tapNav',       onTapNav      );
+	  subscribeElement(getAvatarElements, 'heldstartNav', onHeldstartNav);
+	  subscribeElement(getAvatarElements, 'heldmoveNav',  onHeldmoveNav );
+	  subscribeElement(getAvatarElements, 'heldendNav',   onHeldendNav  );
+
+	  subscribeChatSocket(getChatSocket, 'userupdate', onUserUpdate);
+	  subscribeChatSocket(getChatSocket, 'listchange', onListChange);
+	  subscribeChatSocket(getChatSocket, 'updatechat', onUserUpdate);
+	  */
+
+	  // avatar :: onSetChatee, onLogout
+
+	  /*
+	  avatars.addEventListener('tapNav',       onTapNav      );
+	  avatars.addEventListener('heldstartNav', onHeldstartNav);
+	  avatars.addEventListener('heldmoveNav',  onHeldmoveNav );
+	  avatars.addEventListener('heldendNav',   onHeldendNav  );
+
+	  chatConsole.addEventListener('keypress', onTapToggle);
+	  chatConsole.addEventListener('keypress', onTapToggle);
+
+	  chatChannel.on('userupdate', onUserUpdate);
+	  chatChannel.on('listchange', onListChange);
+	  chatChannel.on('updatechat', onUserUpdate);
+	  */
+	}
+
+	/*
+	var onKeyDown      = function (event) {};
+	var onTapNav       = function (event) {
+	  render(getModel(getAction(event)));
+	};
+	var onHeldstartNav = function (event) {};
+	var onHeldmoveNav  = function (event) {};
+	var onHeldendNav   = function (event) {};
+	var onUserUpdate   = function (user)  {};
+	var onListChange   = function (users) {};
+	var onChatUpdate   = function (value) {};
+	*/
+
+	module.exports = initializeControl;
+
+
+/***/ },
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _createDivComponent = __webpack_require__(3);
-	var DIV                 = __webpack_require__(5).DIV;
-	var H1                  = __webpack_require__(5).H1;
-	var P                   = __webpack_require__(5).P;
-	var createChatConsole   = __webpack_require__(6);
+	var diff          = __webpack_require__(4);
+	var getAppState   = __webpack_require__(5);
+	var getViewModel  = __webpack_require__(7);
+	var interpreter   = __webpack_require__(17);
+	var modifyElement = interpreter.modifyElement;
+
+	// "Global" state, so there can be only one.
+	// `modifyElement` is always called, so may be overly slow.
+	var render = function (viewModel, getAttachmentPoint, controlConfig) {
+	  var rootElement = getAttachmentPoint();
+	  var _viewModel = viewModel;
+	  return function (mapEventToCommand) {
+	    return function (event) {
+	      var appState = getAppState(
+	        mapEventToComamnd(event),
+	        controlConfig);
+	      var newViewModel = getViewModel(appState);
+	      modifyElement(rootElement, diff(newViewModel, _viewModel));
+	      controlConfig.appState = appState;
+	      _viewModel = newViewModel;
+	    };
+	  };
+	};
+
+	module.exports = render;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	function diffArray(value1, value0, index) {
+	  if (!Array.isArray(value0)) {
+	    return { tree: index, commands: [['replace', value1]], index: index + 1 };
+	  }
+
+	  var count = 0;
+	  var length1 = value1.length;
+	  var length0 = value0.length;
+	  var minLength = Math.min(length1, length0);
+
+	  if (minLength > 1) {
+	    for (var j = 0; j < minLength; j++) {
+	      if (value1[j] !== value0[j]) {
+	        count++;
+	      }
+	    }
+
+	    if (count === minLength) {
+	      return { tree: index, commands: [['replace', value1]], index: index + 1 };
+	    }
+	  }
+
+	  var i = 0;
+	  var tree = [];
+	  var commands = [];
+
+	  for (; i < minLength; i++) {
+	    if (value1[i] !== value0[i]) {
+	      var _patch = _diff(value1[i], value0[i], index);
+	      if (_patch.commands.length > 0) {
+	        tree.push({ index: i, value: _patch.tree });
+	        commands = commands.concat(_patch.commands);
+	        index = index + _patch.commands.length;
+	      }
+	    }
+	  }
+
+	  for (; i < length1; i++) {
+	    tree.push({ index: i, value: index });
+	    commands.push(['insertAtEnd', value1[i]]);
+	    index++;
+	  }
+
+	  var removals = [];
+
+	  for (; i < length0; i++) {
+	    removals.unshift({ index: i, value: index });
+	    commands.push(['remove']);
+	    index++;
+	  }
+
+	  tree = tree.concat(removals);
+
+	  return { tree: tree, commands: commands, index: index };
+	}
+
+	function diffObject(value1, value0, index) {
+	  if (!isObject(value0)) {
+	    return {
+	      tree: index,
+	      commands: [['replace', value1]],
+	      index: index + 1
+	    };
+	  }
+
+	  var keyCount = 0;
+	  var diffCount = 0;
+
+	  for (var key in value0) {
+	    if (!value0.hasOwnProperty(key)) continue;
+	    keyCount++;
+	    if (!value1.hasOwnProperty(key) || value1[key] !== value0[key]) {
+	      diffCount++;
+	    }
+	  }
+
+	  if (keyCount > 1 && keyCount === diffCount) {
+	    return { tree: index, commands: [['replace', value1]], index: index + 1 };
+	  }
+
+	  var tree = [];
+	  var commands = [];
+
+	  for (var key in value1) {
+	    if (!value1.hasOwnProperty(key)) continue;
+	    if (value0.hasOwnProperty(key)) {
+	      if (value1[key] !== value0[key]) {
+	        var _patch = _diff(value1[key], value0[key], index);
+	        if (_patch.commands.length > 0) {
+	          tree.push({ index: key, value: _patch.tree });
+	          commands = commands.concat(_patch.commands);
+	          index = index + _patch.commands.length;
+	        }
+	      }
+	    } else {
+	      tree.push({ index: key, value: index });
+	      commands.push(['setAtKey', value1[key]]);
+	      index++;
+	    }
+	  }
+
+	  for (var key in value0) {
+	    if (!value1.hasOwnProperty(key)) {
+	      tree.push({ index: key, value: index });
+	      commands.push(['delete']);
+	      index++;
+	    }
+	  }
+
+	  return { tree: tree, commands: commands, index: index };
+	}
+
+	function _diff(value1, value0, index) {
+	  if (value1 === value0) {
+	    return { tree: [], commands: [], index: index };
+	  }
+
+	  if (Array.isArray(value1)) {
+	    return diffArray(value1, value0, index);
+	  }
+
+	  if (isObject(value1)) {
+	    return diffObject(value1, value0, index);
+	  }
+
+	  return { tree: index, commands: [['replace', value1]], index: index + 1 };
+	}
+
+	var diff = function(value1, value0) {
+	  var patch = _diff(value1, value0, 0);
+	  return { value: patch.tree, commands: patch.commands };
+	};
+
+	function isObject(value) {
+	  return {}.toString.call(value) === '[object Object]';
+	}
+
+	module.exports = diff;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _App = __webpack_require__(6);
+
+	var getAppState = function (command, controlConfig) {
+	  var command = command.name;
+	  var appSate = controlConfig.appState;
+	  switch (command) {
+	    case 'addChar':
+	      return _App.addChar(appState, command.char);
+	    case 'completeWord':
+	      return _App.completeWord(appState, controlConfig.getCandidates);
+	    case 'noOp':
+	      return appState;
+	    case 'submit':
+	      return _App.submit(appState, controlConfig.transform);
+	    default:
+	      //return _App[command](appState);
+	      return appState;
+	  }
+	};
+
+	module.exports = getAppState;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	var _App = {};
+
+	module.exports = _App;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _createDivComponent = __webpack_require__(8);
+	var DIV                 = __webpack_require__(10).DIV;
+	var H1                  = __webpack_require__(10).H1;
+	var P                   = __webpack_require__(10).P;
+	var createChatConsole   = __webpack_require__(11);
 
 	var SHELL_HEAD = _createDivComponent('spa-shell-head');
 	var ACCOUNT    = _createDivComponent('spa-shell-head-acct');
@@ -192,12 +502,12 @@
 
 
 /***/ },
-/* 3 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(4);
+	var isString = __webpack_require__(9);
 
 	module.exports = function _createDivComponent(primaryClass) {
 	  return function () {
@@ -222,7 +532,7 @@
 
 
 /***/ },
-/* 4 */
+/* 9 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -233,7 +543,7 @@
 
 
 /***/ },
-/* 5 */
+/* 10 */
 /***/ function(module, exports) {
 
 	function createElement(tag) {
@@ -325,13 +635,13 @@
 
 
 /***/ },
-/* 6 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createComponent     = __webpack_require__(7);
-	var _createDivComponent = __webpack_require__(3);
-	var DIV                 = __webpack_require__(5).DIV;
-	var SIZER               = __webpack_require__(8);
+	var createComponent     = __webpack_require__(12);
+	var _createDivComponent = __webpack_require__(8);
+	var DIV                 = __webpack_require__(10).DIV;
+	var SIZER               = __webpack_require__(13);
 
 	var CHAT      = _createDivComponent('spa-chat');
 	var CHAT_HEAD = _createDivComponent('spa-chat-head');
@@ -434,12 +744,12 @@
 
 
 /***/ },
-/* 7 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(4);
+	var isString = __webpack_require__(9);
 
 	module.exports = function createComponent(tag, primaryClass) {
 	  return function (config) {
@@ -489,14 +799,14 @@
 
 
 /***/ },
-/* 8 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createComponent     = __webpack_require__(7);
-	var _createDivComponent = __webpack_require__(3);
-	var DIV                 = __webpack_require__(5).DIV;
-	var SUBMIT              = __webpack_require__(9);
-	var TEXT                = __webpack_require__(11);
+	var createComponent     = __webpack_require__(12);
+	var _createDivComponent = __webpack_require__(8);
+	var DIV                 = __webpack_require__(10).DIV;
+	var SUBMIT              = __webpack_require__(14);
+	var TEXT                = __webpack_require__(16);
 
 	var BOX      = _createDivComponent('spa-chat-list-box');
 	var LIST     = _createDivComponent('spa-chat-list');
@@ -582,21 +892,21 @@
 
 
 /***/ },
-/* 9 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(10)('submit');
+	module.exports = __webpack_require__(15)('submit');
 
 
 /***/ },
-/* 10 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(4);
+	var isString = __webpack_require__(9);
 
 	module.exports = function createInput(type) {
 	  return function (config) {
@@ -647,29 +957,16 @@
 
 
 /***/ },
-/* 11 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(10)('text');
+	module.exports = __webpack_require__(15)('text');
 
 
 /***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var createElement = __webpack_require__(13).createElement;
-
-	function initializeView(attachToDom, viewModel) {
-	  attachToDom(createElement(viewModel));
-	}
-
-	module.exports = initializeView;
-
-
-/***/ },
-/* 13 */
+/* 17 */
 /***/ function(module, exports) {
 
 	function attachElement(parent, element) {
@@ -951,7 +1248,20 @@
 
 
 /***/ },
-/* 14 */
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var createElement = __webpack_require__(17).createElement;
+
+	function initializeView(attachToDom, viewModel) {
+	  attachToDom(createElement(viewModel));
+	}
+
+	module.exports = initializeView;
+
+
+/***/ },
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1072,7 +1382,7 @@
 	  };
 	  useIFrameAndPolling = function() {
 	    var getLegacySupport;
-	    getLegacySupport = __webpack_require__(15);
+	    getLegacySupport = __webpack_require__(20);
 	    useIFrameAndPolling = getLegacySupport(getLegacyConfig());
 	    return useIFrameAndPolling();
 	  };
@@ -1094,7 +1404,7 @@
 
 
 /***/ },
-/* 15 */
+/* 20 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1178,7 +1488,7 @@
 
 
 /***/ },
-/* 16 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module) {/*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
@@ -5054,10 +5364,10 @@
 	  !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () { return io; }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	}
 	})();
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(22)(module)))
 
 /***/ },
-/* 17 */
+/* 22 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {

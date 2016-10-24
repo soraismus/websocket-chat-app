@@ -2,15 +2,22 @@
 //  getElement().addEventListener(eventType, suppressDefault(eventHandler));
 //}
 
-function subscribe(listen, eventType, eventHandler) {
-  listen(eventType, eventHandler);
-}
+//var supressDefault = function (handleEvent) {
+//  return function (event) {
+//    event.preventDefault();
+//    handleEvent(event);
+//  };
+//};
 
-function supressDefault(handleEvent) {
-  return function (event) {
-    event.preventDefault();
-    handleEvent(event);
-  };
-}
+// var getElement = function (elementId) {
+//   return document.getElementById(elementId);
+// };
+// var listen = function (eventType, eventHandler) {
+//   getElement(id0).addEventListener(eventType, eventHandler);
+// };
+
+var subscribe = function (listen, eventType, eventHandler) {
+  listen(eventType, eventHandler);
+};
 
 module.exports = subscribe;

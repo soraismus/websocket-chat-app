@@ -1,8 +1,7 @@
 //var getInitialModel     = require('./models/getInitialModel');
 //var getInitialViewModel = require('./view/recreateConsole');
-//var initializeControl   = require('./control/initializeControl');
-//var render              = require('./render');
-//var subscribe           = require('./subscribe');
+var initializeControl   = require('../controllers/initialize');
+var render              = require('./render');
 
 //var initializeView      = require('../views/createChatConsole');
 var createSpa      = require('../views/createSpa');
@@ -22,6 +21,7 @@ var getHashRoute = function (chatConsoleState) {
 
 var initialize = function (config) {
   var nodeId = config.nodeId;
+  //var initialModel = getInitialModel();
   var viewModel = createSpa(config);
   var attachmentPoint = document.getElementsByTagName('body')[0];
 
@@ -31,10 +31,26 @@ var initialize = function (config) {
     },
     viewModel);
 
-  //initializeControl(
-  //  subscribe,
-  //  render(viewModel, attachmentPoint.childNodes[0], controlConfig, _scroll),
-  //  controlConfig);
+  var getAttachmentPoint = function () {
+    return attachmentPoint.childNodes[1];
+    // return attachmentPoint.getElementById(nodeId);
+  };
+
+  var initialModel = {
+    chatConsoleState : 'open',
+    packets          : [],
+    users            : []
+  };
+
+  var controlConfig = Object.seal({
+    appState : initialModel
+  });
+
+  var eventPublishers = {};
+
+  initializeControl(
+    eventPublishers,
+    render(viewModel, getAttachmentPoint, controlConfig));
 
   Route({
     hash         : getHashRoute(config.chatConsoleState),
