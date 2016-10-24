@@ -4,6 +4,8 @@ var H1                  = require('./ribosome/elements').H1;
 var P                   = require('./ribosome/elements').P;
 var createChatConsole   = require('./createChatConsole');
 
+var Route               = require('../libraries/Route');
+
 var SHELL_HEAD = _createDivComponent('spa-shell-head');
 var ACCOUNT    = _createDivComponent('spa-shell-head-acct');
 var LOGO       = _createDivComponent('spa-shell-head-logo');
@@ -13,7 +15,19 @@ var CONTENT    = _createDivComponent('spa-shell-main-content');
 var FOOT       = _createDivComponent('spa-shell-foot');
 var MODAL      = _createDivComponent('spa-shell-modal');
 
+var getHashRoute = function (chatConsoleState) {
+  switch (chatConsoleState) {
+    case 'closed': return '/closed';
+    default:       return '/open';
+  }
+};
+
 module.exports = function createSpa(config) {
+  Route({
+    hash         : getHashRoute(config.chatConsoleState),
+    onHashChange : true
+  });
+
  return DIV(
    { id: 'spa' },
    SHELL_HEAD(

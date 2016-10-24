@@ -7,7 +7,14 @@
 //   -- or to daisychain their commands by emitting to
 //      another publisher/commander (??)
 
-var initializeControl = function (commanders, render, notify) {
+var initializeControl = function (getCommanders, render, notify) {
+  var commanders = getCommanders();
+  commanders['avatar-clicks'](function (event) {
+    console.log(event);
+    //if (contains(event.target.classList, 'spa-avtr-box')) {
+    //  console.log('avatar');
+    //}
+  });
   // publishers['keydown'].subscribe(render(interpretKeydown));
   // publishers['avatarCreation'].subscribe(notify('persist'));
   // publishers['persist'].subscribe(render(interpretPersistedData));

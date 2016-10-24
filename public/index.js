@@ -78,7 +78,7 @@
 
 	initialize(config);
 
-	var socketClient = __webpack_require__(21);
+	var socketClient = __webpack_require__(22);
 	if (!!socketClient) { console.log('SOCKET CLIENT'); }
 
 
@@ -89,13 +89,14 @@
 	//var getInitialModel     = require('./models/getInitialModel');
 	//var getInitialViewModel = require('./view/recreateConsole');
 	var initializeControl   = __webpack_require__(2);
-	var render              = __webpack_require__(3);
+	var getPublishers       = __webpack_require__(3);
+	var render              = __webpack_require__(4);
 
 	//var initializeView      = require('../views/createChatConsole');
-	var createSpa      = __webpack_require__(7);
-	var initializeView = __webpack_require__(18);
+	var createSpa      = __webpack_require__(8);
+	var initializeView = __webpack_require__(19);
 
-	var getRouteElement = __webpack_require__(19);
+	var getRouteElement = __webpack_require__(20);
 	var Route = getRouteElement(function (value) {
 	  console.log(value);
 	});
@@ -137,7 +138,7 @@
 	  var eventPublishers = {};
 
 	  initializeControl(
-	    eventPublishers,
+	    getPublishers,
 	    render(viewModel, getAttachmentPoint, controlConfig));
 
 	  Route({
@@ -163,7 +164,23 @@
 	//   -- or to daisychain their commands by emitting to
 	//      another publisher/commander (??)
 
-	var initializeControl = function (commanders, render, notify) {
+	var contains = function (array, value) {
+	  for (var i = 0; i < array.length; i++) {
+	    if (array[i] === value) {
+	      return true;
+	    }
+	  }
+	  return false;
+	};
+
+	var initializeControl = function (getCommanders, render, notify) {
+	  var commanders = getCommanders();
+	  commanders['avatar-clicks'](function (event) {
+	    console.log(event);
+	    //if (contains(event.target.classList, 'spa-avtr-box')) {
+	    //  console.log('avatar');
+	    //}
+	  });
 	  // publishers['keydown'].subscribe(render(interpretKeydown));
 	  // publishers['avatarCreation'].subscribe(notify('persist'));
 	  // publishers['persist'].subscribe(render(interpretPersistedData));
@@ -235,12 +252,60 @@
 
 /***/ },
 /* 3 */
+/***/ function(module, exports) {
+
+	var getNode = function () {
+	  var subscribers = [];
+	  var publish = function (event) {
+	    for (var i = 0; i < subscribers.length; i++) {
+	      subscribers[i](event);
+	    }
+	  };
+	  var subscribe = function (handleEvent) {
+	    subscribers.push(handleEvent);
+	  };
+	  return {
+	    publish   : publish,
+	    subscribe : subscribe
+	  };
+	};
+
+	var contains = function (array, value) {
+	  for (var i = 0; i < array.length; i++) {
+	    if (array[i] === value) {
+	      return true;
+	    }
+	  }
+	  return false;
+	};
+
+	var getPublishers = function () {
+	  var avatarClicks = getNode();
+
+	  document
+	    .getElementsByClassName('spa-shell-main-nav')[0]
+	    .addEventListener('mouseup', function (event) {
+	      if (contains(event.target.classList, 'spa-avtr-box')) {
+	        avatarClicks.publish(event);
+	      }
+	    });
+
+	  return {
+	    'avatar-clicks' : avatarClicks.subscribe
+	  };
+	};
+
+	module.exports = getPublishers;
+
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var diff          = __webpack_require__(4);
-	var getAppState   = __webpack_require__(5);
-	var getViewModel  = __webpack_require__(7);
-	var interpreter   = __webpack_require__(17);
+	var diff          = __webpack_require__(5);
+	var getAppState   = __webpack_require__(6);
+	var getViewModel  = __webpack_require__(8);
+	var interpreter   = __webpack_require__(18);
 	var modifyElement = interpreter.modifyElement;
 
 	// "Global" state, so there can be only one.
@@ -265,7 +330,7 @@
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	function diffArray(value1, value0, index) {
@@ -409,10 +474,10 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _App = __webpack_require__(6);
+	var _App = __webpack_require__(7);
 
 	var getAppState = function (command, controlConfig) {
 	  var command = command.name;
@@ -436,7 +501,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	var _App = {};
@@ -445,14 +510,14 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _createDivComponent = __webpack_require__(8);
-	var DIV                 = __webpack_require__(10).DIV;
-	var H1                  = __webpack_require__(10).H1;
-	var P                   = __webpack_require__(10).P;
-	var createChatConsole   = __webpack_require__(11);
+	var _createDivComponent = __webpack_require__(9);
+	var DIV                 = __webpack_require__(11).DIV;
+	var H1                  = __webpack_require__(11).H1;
+	var P                   = __webpack_require__(11).P;
+	var createChatConsole   = __webpack_require__(12);
 
 	var SHELL_HEAD = _createDivComponent('spa-shell-head');
 	var ACCOUNT    = _createDivComponent('spa-shell-head-acct');
@@ -502,12 +567,12 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(9);
+	var isString = __webpack_require__(10);
 
 	module.exports = function _createDivComponent(primaryClass) {
 	  return function () {
@@ -532,7 +597,7 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -543,7 +608,7 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	function createElement(tag) {
@@ -635,13 +700,13 @@
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createComponent     = __webpack_require__(12);
-	var _createDivComponent = __webpack_require__(8);
-	var DIV                 = __webpack_require__(10).DIV;
-	var SIZER               = __webpack_require__(13);
+	var createComponent     = __webpack_require__(13);
+	var _createDivComponent = __webpack_require__(9);
+	var DIV                 = __webpack_require__(11).DIV;
+	var SIZER               = __webpack_require__(14);
 
 	var CHAT      = _createDivComponent('spa-chat');
 	var CHAT_HEAD = _createDivComponent('spa-chat-head');
@@ -744,12 +809,12 @@
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(9);
+	var isString = __webpack_require__(10);
 
 	module.exports = function createComponent(tag, primaryClass) {
 	  return function (config) {
@@ -799,14 +864,14 @@
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createComponent     = __webpack_require__(12);
-	var _createDivComponent = __webpack_require__(8);
-	var DIV                 = __webpack_require__(10).DIV;
-	var SUBMIT              = __webpack_require__(14);
-	var TEXT                = __webpack_require__(16);
+	var createComponent     = __webpack_require__(13);
+	var _createDivComponent = __webpack_require__(9);
+	var DIV                 = __webpack_require__(11).DIV;
+	var SUBMIT              = __webpack_require__(15);
+	var TEXT                = __webpack_require__(17);
 
 	var BOX      = _createDivComponent('spa-chat-list-box');
 	var LIST     = _createDivComponent('spa-chat-list');
@@ -892,21 +957,21 @@
 
 
 /***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = __webpack_require__(15)('submit');
-
-
-/***/ },
 /* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(9);
+	module.exports = __webpack_require__(16)('submit');
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var isString = __webpack_require__(10);
 
 	module.exports = function createInput(type) {
 	  return function (config) {
@@ -957,16 +1022,16 @@
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(15)('text');
+	module.exports = __webpack_require__(16)('text');
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	function attachElement(parent, element) {
@@ -1248,10 +1313,10 @@
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createElement = __webpack_require__(17).createElement;
+	var createElement = __webpack_require__(18).createElement;
 
 	function initializeView(attachToDom, viewModel) {
 	  attachToDom(createElement(viewModel));
@@ -1261,7 +1326,7 @@
 
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1382,7 +1447,7 @@
 	  };
 	  useIFrameAndPolling = function() {
 	    var getLegacySupport;
-	    getLegacySupport = __webpack_require__(20);
+	    getLegacySupport = __webpack_require__(21);
 	    useIFrameAndPolling = getLegacySupport(getLegacyConfig());
 	    return useIFrameAndPolling();
 	  };
@@ -1404,7 +1469,7 @@
 
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1488,7 +1553,7 @@
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module) {/*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
@@ -5364,10 +5429,10 @@
 	  !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () { return io; }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	}
 	})();
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(22)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23)(module)))
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {

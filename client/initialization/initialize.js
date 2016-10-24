@@ -1,23 +1,12 @@
 //var getInitialModel     = require('./models/getInitialModel');
 //var getInitialViewModel = require('./view/recreateConsole');
 var initializeControl   = require('../controllers/initialize');
+var getPublishers       = require('../controllers/getPublishers');
 var render              = require('./render');
 
 //var initializeView      = require('../views/createChatConsole');
 var createSpa      = require('../views/createSpa');
 var initializeView = require('../views/initialize');
-
-var getRouteElement = require('reactive-aspen-route');
-var Route = getRouteElement(function (value) {
-  console.log(value);
-});
-
-var getHashRoute = function (chatConsoleState) {
-  switch (chatConsoleState) {
-    case 'closed': return '/closed';
-    default:       return '/open';
-  }
-};
 
 var initialize = function (config) {
   var nodeId = config.nodeId;
@@ -49,14 +38,8 @@ var initialize = function (config) {
   var eventPublishers = {};
 
   initializeControl(
-    eventPublishers,
+    getPublishers,
     render(viewModel, getAttachmentPoint, controlConfig));
-
-  Route({
-    hash         : getHashRoute(config.chatConsoleState),
-    onHashChange : true
-  });
-
 }
 
 module.exports = initialize;
