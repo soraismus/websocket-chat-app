@@ -1,18 +1,4 @@
-var getNode = function () {
-  var subscribers = [];
-  var publish = function (event) {
-    for (var i = 0; i < subscribers.length; i++) {
-      subscribers[i](event);
-    }
-  };
-  var subscribe = function (handleEvent) {
-    subscribers.push(handleEvent);
-  };
-  return {
-    publish   : publish,
-    subscribe : subscribe
-  };
-};
+var getNode = require('./getNode');
 
 var contains = function (array, value) {
   for (var i = 0; i < array.length; i++) {
@@ -23,7 +9,7 @@ var contains = function (array, value) {
   return false;
 };
 
-var getPublishers = function () {
+var getPublishers = function (hashChanges) {
   var avatarClicks = getNode();
 
   document
@@ -35,7 +21,8 @@ var getPublishers = function () {
     });
 
   return {
-    'avatar-clicks' : avatarClicks.subscribe
+    'avatar-clicks' : avatarClicks.subscribe,
+    'hash-changes'  : hashChanges.subscribe
   };
 };
 

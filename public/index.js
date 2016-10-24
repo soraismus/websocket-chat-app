@@ -78,7 +78,7 @@
 
 	initialize(config);
 
-	var socketClient = __webpack_require__(22);
+	var socketClient = __webpack_require__(25);
 	if (!!socketClient) { console.log('SOCKET CLIENT'); }
 
 
@@ -89,24 +89,12 @@
 	//var getInitialModel     = require('./models/getInitialModel');
 	//var getInitialViewModel = require('./view/recreateConsole');
 	var initializeControl   = __webpack_require__(2);
-	var getPublishers       = __webpack_require__(3);
-	var render              = __webpack_require__(4);
+	var getPublishers       = __webpack_require__(5);
+	var render              = __webpack_require__(6);
 
 	//var initializeView      = require('../views/createChatConsole');
-	var createSpa      = __webpack_require__(8);
-	var initializeView = __webpack_require__(19);
-
-	var getRouteElement = __webpack_require__(20);
-	var Route = getRouteElement(function (value) {
-	  console.log(value);
-	});
-
-	var getHashRoute = function (chatConsoleState) {
-	  switch (chatConsoleState) {
-	    case 'closed': return '/closed';
-	    default:       return '/open';
-	  }
-	};
+	var createSpa      = __webpack_require__(10);
+	var initializeView = __webpack_require__(24);
 
 	var initialize = function (config) {
 	  var nodeId = config.nodeId;
@@ -140,12 +128,6 @@
 	  initializeControl(
 	    getPublishers,
 	    render(viewModel, getAttachmentPoint, controlConfig));
-
-	  Route({
-	    hash         : getHashRoute(config.chatConsoleState),
-	    onHashChange : true
-	  });
-
 	}
 
 	module.exports = initialize;
@@ -153,7 +135,7 @@
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	// publishers.js :-> register all event emitters/listeners
 	// commanders.js :-> adapt all events to a uniform command API.
@@ -164,58 +146,16 @@
 	//   -- or to daisychain their commands by emitting to
 	//      another publisher/commander (??)
 
-	var contains = function (array, value) {
-	  for (var i = 0; i < array.length; i++) {
-	    if (array[i] === value) {
-	      return true;
-	    }
-	  }
-	  return false;
+	var hashChanges = __webpack_require__(3); // Here or higher?
+
+	var log = function (value) {
+	  console.log(value);
 	};
 
 	var initializeControl = function (getCommanders, render, notify) {
-	  var commanders = getCommanders();
-	  commanders['avatar-clicks'](function (event) {
-	    console.log(event);
-	    //if (contains(event.target.classList, 'spa-avtr-box')) {
-	    //  console.log('avatar');
-	    //}
-	  });
-	  // publishers['keydown'].subscribe(render(interpretKeydown));
-	  // publishers['avatarCreation'].subscribe(notify('persist'));
-	  // publishers['persist'].subscribe(render(interpretPersistedData));
-
-	  /*
-	  var getElement = function (elementId) {
-	    return document.getElementById(elementId);
-	  };
-	  var listen = function (eventType, eventHandler) {
-	    getElement(id0).addEventListener(eventType, eventHandler);
-	  };
-	  subscribe(listen, 'keydown', render(interpretKeydown));
-	  */
-
-	  // subscribe('keydown', render(interpretKeydown));
-
-	  /*
-	  subscribe('keydown', handleEvent(interpretKeydown));
-	  var onToggleSession = function (event) {};
-	  var sessionConsole =
-	    document.getElementsByClassname('spa-shell-head-acct');
-	  sessionConsole.addEventListener('mouseup', onToggleSession);
-	  subscribe(events.sessionToggle, toggleSession);
-	  */
-
-	  /*
-	  subscribeElement(getAvatarElements, 'tapNav',       onTapNav      );
-	  subscribeElement(getAvatarElements, 'heldstartNav', onHeldstartNav);
-	  subscribeElement(getAvatarElements, 'heldmoveNav',  onHeldmoveNav );
-	  subscribeElement(getAvatarElements, 'heldendNav',   onHeldendNav  );
-
-	  subscribeChatSocket(getChatSocket, 'userupdate', onUserUpdate);
-	  subscribeChatSocket(getChatSocket, 'listchange', onListChange);
-	  subscribeChatSocket(getChatSocket, 'updatechat', onUserUpdate);
-	  */
+	  var commanders = getCommanders(hashChanges);
+	  commanders['avatar-clicks'](log);
+	  commanders['hash-changes'](log);
 
 	  // avatar :: onSetChatee, onLogout
 
@@ -231,44 +171,59 @@
 	  chatChannel.on('userupdate', onUserUpdate);
 	  chatChannel.on('listchange', onListChange);
 	  chatChannel.on('updatechat', onUserUpdate);
+
+	  sessionConsole.addEventListener('mouseup', onToggleSession);
 	  */
 	}
-
-	/*
-	var onKeyDown      = function (event) {};
-	var onTapNav       = function (event) {
-	  render(getModel(getAction(event)));
-	};
-	var onHeldstartNav = function (event) {};
-	var onHeldmoveNav  = function (event) {};
-	var onHeldendNav   = function (event) {};
-	var onUserUpdate   = function (user)  {};
-	var onListChange   = function (users) {};
-	var onChatUpdate   = function (value) {};
-	*/
 
 	module.exports = initializeControl;
 
 
 /***/ },
 /* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var getNode = __webpack_require__(4);
+
+	var hashChanges = getNode();
+
+	module.exports = hashChanges;
+
+
+/***/ },
+/* 4 */
 /***/ function(module, exports) {
 
 	var getNode = function () {
-	  var subscribers = [];
+	  var id = 0;
+	  var subscribers = Object.create(null);
 	  var publish = function (event) {
-	    for (var i = 0; i < subscribers.length; i++) {
-	      subscribers[i](event);
+	    for (var key in subscribers) {
+	      subscribers[key](event);
 	    }
 	  };
 	  var subscribe = function (handleEvent) {
-	    subscribers.push(handleEvent);
+	    var key = id;
+	    subscribers[key] = handleEvent;
+	    id += 1;
+	    return function () {
+	      delete subscribers[key];
+	    };
 	  };
 	  return {
 	    publish   : publish,
 	    subscribe : subscribe
 	  };
 	};
+
+	module.exports = getNode;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var getNode = __webpack_require__(4);
 
 	var contains = function (array, value) {
 	  for (var i = 0; i < array.length; i++) {
@@ -279,7 +234,7 @@
 	  return false;
 	};
 
-	var getPublishers = function () {
+	var getPublishers = function (hashChanges) {
 	  var avatarClicks = getNode();
 
 	  document
@@ -291,7 +246,8 @@
 	    });
 
 	  return {
-	    'avatar-clicks' : avatarClicks.subscribe
+	    'avatar-clicks' : avatarClicks.subscribe,
+	    'hash-changes'  : hashChanges.subscribe
 	  };
 	};
 
@@ -299,13 +255,13 @@
 
 
 /***/ },
-/* 4 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var diff          = __webpack_require__(5);
-	var getAppState   = __webpack_require__(6);
-	var getViewModel  = __webpack_require__(8);
-	var interpreter   = __webpack_require__(18);
+	var diff          = __webpack_require__(7);
+	var getAppState   = __webpack_require__(8);
+	var getViewModel  = __webpack_require__(10);
+	var interpreter   = __webpack_require__(23);
 	var modifyElement = interpreter.modifyElement;
 
 	// "Global" state, so there can be only one.
@@ -330,7 +286,7 @@
 
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports) {
 
 	function diffArray(value1, value0, index) {
@@ -474,10 +430,10 @@
 
 
 /***/ },
-/* 6 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _App = __webpack_require__(7);
+	var _App = __webpack_require__(9);
 
 	var getAppState = function (command, controlConfig) {
 	  var command = command.name;
@@ -501,7 +457,7 @@
 
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports) {
 
 	var _App = {};
@@ -510,14 +466,16 @@
 
 
 /***/ },
-/* 8 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _createDivComponent = __webpack_require__(9);
-	var DIV                 = __webpack_require__(11).DIV;
-	var H1                  = __webpack_require__(11).H1;
-	var P                   = __webpack_require__(11).P;
-	var createChatConsole   = __webpack_require__(12);
+	var _createDivComponent = __webpack_require__(11);
+	var DIV                 = __webpack_require__(13).DIV;
+	var H1                  = __webpack_require__(13).H1;
+	var P                   = __webpack_require__(13).P;
+	var createChatConsole   = __webpack_require__(14);
+
+	var Route               = __webpack_require__(20);
 
 	var SHELL_HEAD = _createDivComponent('spa-shell-head');
 	var ACCOUNT    = _createDivComponent('spa-shell-head-acct');
@@ -528,7 +486,19 @@
 	var FOOT       = _createDivComponent('spa-shell-foot');
 	var MODAL      = _createDivComponent('spa-shell-modal');
 
+	var getHashRoute = function (chatConsoleState) {
+	  switch (chatConsoleState) {
+	    case 'closed': return '/closed';
+	    default:       return '/open';
+	  }
+	};
+
 	module.exports = function createSpa(config) {
+	  Route({
+	    hash         : getHashRoute(config.chatConsoleState),
+	    onHashChange : true
+	  });
+
 	 return DIV(
 	   { id: 'spa' },
 	   SHELL_HEAD(
@@ -567,12 +537,12 @@
 
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(10);
+	var isString = __webpack_require__(12);
 
 	module.exports = function _createDivComponent(primaryClass) {
 	  return function () {
@@ -597,7 +567,7 @@
 
 
 /***/ },
-/* 10 */
+/* 12 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -608,7 +578,7 @@
 
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports) {
 
 	function createElement(tag) {
@@ -700,13 +670,13 @@
 
 
 /***/ },
-/* 12 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createComponent     = __webpack_require__(13);
-	var _createDivComponent = __webpack_require__(9);
-	var DIV                 = __webpack_require__(11).DIV;
-	var SIZER               = __webpack_require__(14);
+	var createComponent     = __webpack_require__(15);
+	var _createDivComponent = __webpack_require__(11);
+	var DIV                 = __webpack_require__(13).DIV;
+	var SIZER               = __webpack_require__(16);
 
 	var CHAT      = _createDivComponent('spa-chat');
 	var CHAT_HEAD = _createDivComponent('spa-chat-head');
@@ -809,12 +779,12 @@
 
 
 /***/ },
-/* 13 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(10);
+	var isString = __webpack_require__(12);
 
 	module.exports = function createComponent(tag, primaryClass) {
 	  return function (config) {
@@ -864,14 +834,14 @@
 
 
 /***/ },
-/* 14 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createComponent     = __webpack_require__(13);
-	var _createDivComponent = __webpack_require__(9);
-	var DIV                 = __webpack_require__(11).DIV;
-	var SUBMIT              = __webpack_require__(15);
-	var TEXT                = __webpack_require__(17);
+	var createComponent     = __webpack_require__(15);
+	var _createDivComponent = __webpack_require__(11);
+	var DIV                 = __webpack_require__(13).DIV;
+	var SUBMIT              = __webpack_require__(17);
+	var TEXT                = __webpack_require__(19);
 
 	var BOX      = _createDivComponent('spa-chat-list-box');
 	var LIST     = _createDivComponent('spa-chat-list');
@@ -957,21 +927,21 @@
 
 
 /***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(16)('submit');
+	module.exports = __webpack_require__(18)('submit');
 
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isString = __webpack_require__(10);
+	var isString = __webpack_require__(12);
 
 	module.exports = function createInput(type) {
 	  return function (config) {
@@ -1022,16 +992,255 @@
 
 
 /***/ },
-/* 17 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(16)('text');
+	module.exports = __webpack_require__(18)('text');
 
 
 /***/ },
-/* 18 */
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var getRouteElement = __webpack_require__(21);
+	var hashChanges     = __webpack_require__(3);
+
+	var Route = getRouteElement(hashChanges.publish)
+
+	module.exports = Route;
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var getRouteElement;
+
+	getRouteElement = function(exportToAspen) {
+	  var Route, changeRouteToHash, exportEvent, getCurrentHashRoute, getEventHandler, getEventValue, getLegacyConfig, handlers, history, isFunction, isPopStateEvent, isString, isViableHash, isViablePath, labels, manageHashRouting, managePathRouting, refusesHashRouting, setHash, setHashMonitoring, setPath, setPathHandler, supportsHashChange, supportsPushState, useIFrameAndPolling;
+	  if (typeof window === "undefined" || window === null) {
+	    return (function() {});
+	  }
+	  changeRouteToHash = function(route) {
+	    return '#' + route;
+	  };
+	  exportEvent = function(key) {
+	    return function(event) {
+	      var capsule;
+	      if (isFunction(exportToAspen)) {
+	        capsule = {
+	          event: getEventValue(event),
+	          handler: handlers[key],
+	          label: labels[key]
+	        };
+	        return exportToAspen(capsule);
+	      }
+	    };
+	  };
+	  getCurrentHashRoute = function(window) {
+	    var match;
+	    match = window.location.href.match(/#(.*)$/);
+	    if (match) {
+	      return match[1];
+	    } else {
+	      return '';
+	    }
+	  };
+	  getEventHandler = function(fn, key) {
+	    switch (false) {
+	      case !(fn === true):
+	        return exportEvent(key);
+	      case !(isFunction(fn)):
+	        return fn;
+	      default:
+	        return null;
+	    }
+	  };
+	  getEventValue = function(event) {
+	    if (isPopStateEvent(event)) {
+	      return event.state;
+	    } else {
+	      return getCurrentHashRoute(window);
+	    }
+	  };
+	  getLegacyConfig = function() {
+	    return {
+	      exportToAspen: exportToAspen,
+	      getCurrentHashRoute: getCurrentHashRoute,
+	      handler: handlers.hash,
+	      label: labels.hash,
+	      setHash: setHash
+	    };
+	  };
+	  isFunction = function(val) {
+	    return typeof val === 'function';
+	  };
+	  isPopStateEvent = function(event) {
+	    return event && event.state;
+	  };
+	  isString = function(val) {
+	    return Object.prototype.toString.call(val) === '[object String]';
+	  };
+	  isViableHash = function(route) {
+	    return isString(route) && route !== getCurrentHashRoute(window);
+	  };
+	  isViablePath = function(route) {
+	    return isString(route) && route !== window.location.pathname;
+	  };
+	  manageHashRouting = function(route, hashHandler) {
+	    if (isViableHash(route)) {
+	      setHash(route, window);
+	      return setHashMonitoring(hashHandler);
+	    }
+	  };
+	  managePathRouting = function(route, pathHandler) {
+	    if (isViablePath(route)) {
+	      setPath(route);
+	    }
+	    return setPathHandler(pathHandler);
+	  };
+	  refusesHashRouting = function(hash) {
+	    return !hash;
+	  };
+	  Route = function(config) {
+	    var hash, onHashChange, onPathChange, path;
+	    hash = config.hash, onHashChange = config.onHashChange, onPathChange = config.onPathChange, path = config.path;
+	    if (refusesHashRouting(hash) && supportsPushState) {
+	      return managePathRouting(path, onPathChange);
+	    } else {
+	      return manageHashRouting(hash, onHashChange);
+	    }
+	  };
+	  setHash = function(route, window) {
+	    if (window) {
+	      return window.location.hash = changeRouteToHash(route);
+	    }
+	  };
+	  setHashMonitoring = function(hashHandler) {
+	    if (supportsHashChange) {
+	      return window.onhashchange = getEventHandler(hashHandler, 'hash');
+	    } else {
+	      return useIFrameAndPolling();
+	    }
+	  };
+	  setPath = function(path) {
+	    return history.pushState(path, document.title, path);
+	  };
+	  setPathHandler = function(pathHandler) {
+	    return window.onpopstate = getEventHandler(pathHandler, 'pathname');
+	  };
+	  useIFrameAndPolling = function() {
+	    var getLegacySupport;
+	    getLegacySupport = __webpack_require__(22);
+	    useIFrameAndPolling = getLegacySupport(getLegacyConfig());
+	    return useIFrameAndPolling();
+	  };
+	  handlers = {
+	    hash: 'onHashChange',
+	    pathname: 'onPathChange'
+	  };
+	  history = window.history;
+	  labels = {
+	    hash: 'Hash',
+	    pathname: 'Path'
+	  };
+	  supportsHashChange = !!('onhashchange' in window);
+	  supportsPushState = !!(history && history.pushState);
+	  return Route;
+	};
+
+	module.exports = getRouteElement;
+
+
+/***/ },
+/* 22 */
+/***/ function(module, exports) {
+
+	'use strict';
+	var getLegacySupport;
+
+	getLegacySupport = function(config) {
+	  var cachedRoute, checkHash, checkHashInterval, createIFrame, exportHash, exportToAspen, getCurrentHashRoute, handler, interval, isCached, isStale, label, navigateAndExport, navigateTo, pollingStarted, setHash, setIFrameHash, startPolling, useIFrameAndPolling;
+	  exportToAspen = config.exportToAspen, getCurrentHashRoute = config.getCurrentHashRoute, handler = config.handler, label = config.label, setHash = config.setHash;
+	  cachedRoute = null;
+	  checkHashInterval = null;
+	  pollingStarted = false;
+	  checkHash = function(iframe) {
+	    return function() {
+	      var iframeRoute, route;
+	      route = getCurrentHashRoute(window);
+	      if (isCached(route)) {
+	        iframeRoute = getCurrentHashRoute(iframe);
+	        if (!isCached(iframeRoute)) {
+	          return navigateAndExport(iframeRoute, iframe);
+	        }
+	      } else {
+	        return navigateAndExport(route, iframe);
+	      }
+	    };
+	  };
+	  createIFrame = function(route) {
+	    var $iframe, body, iframe;
+	    iframe = document.createElement('iframe');
+	    iframe.src = 'javascript:0';
+	    iframe.style.display = 'none';
+	    iframe.tabIndex = -1;
+	    body = document.body;
+	    $iframe = body.insertBefore(iframe, body.firstChild).contentWindow;
+	    $iframe.document.open().close();
+	    setHash(route, $iframe);
+	    return $iframe;
+	  };
+	  exportHash = function() {
+	    return exportToAspen({
+	      event: getCurrentHashRoute(window, handler, label)
+	    });
+	  };
+	  isCached = function(route) {
+	    return route === cachedRoute;
+	  };
+	  isStale = function(route, iframe) {
+	    return route === getCurrentHashRoute(iframe);
+	  };
+	  navigateTo = function(route, iframe) {
+	    cachedRoute = route;
+	    setHash(route, window);
+	    if (!isStale(route, iframe)) {
+	      return setIFrameHash(iframe, route);
+	    }
+	  };
+	  navigateAndExport = function(route, iframe) {
+	    navigateTo(route, iframe);
+	    return exportHash();
+	  };
+	  setIFrameHash = function(iframe, route) {
+	    iframe.document.open().close();
+	    return setHash(route, iframe);
+	  };
+	  startPolling = function(iframe) {
+	    checkHashInterval = setInterval(checkHash(iframe), interval);
+	    return pollingStarted = true;
+	  };
+	  useIFrameAndPolling = function() {
+	    var iframe;
+	    if (!pollingStarted) {
+	      cachedRoute = getCurrentHashRoute(window);
+	      iframe = createIFrame(cachedRoute);
+	      return startPolling(iframe);
+	    }
+	  };
+	  interval = 50;
+	  return useIFrameAndPolling;
+	};
+
+	module.exports = getLegacySupport;
+
+
+/***/ },
+/* 23 */
 /***/ function(module, exports) {
 
 	function attachElement(parent, element) {
@@ -1313,10 +1522,10 @@
 
 
 /***/ },
-/* 19 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createElement = __webpack_require__(18).createElement;
+	var createElement = __webpack_require__(23).createElement;
 
 	function initializeView(attachToDom, viewModel) {
 	  attachToDom(createElement(viewModel));
@@ -1326,234 +1535,7 @@
 
 
 /***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	var getRouteElement;
-
-	getRouteElement = function(exportToAspen) {
-	  var Route, changeRouteToHash, exportEvent, getCurrentHashRoute, getEventHandler, getEventValue, getLegacyConfig, handlers, history, isFunction, isPopStateEvent, isString, isViableHash, isViablePath, labels, manageHashRouting, managePathRouting, refusesHashRouting, setHash, setHashMonitoring, setPath, setPathHandler, supportsHashChange, supportsPushState, useIFrameAndPolling;
-	  if (typeof window === "undefined" || window === null) {
-	    return (function() {});
-	  }
-	  changeRouteToHash = function(route) {
-	    return '#' + route;
-	  };
-	  exportEvent = function(key) {
-	    return function(event) {
-	      var capsule;
-	      if (isFunction(exportToAspen)) {
-	        capsule = {
-	          event: getEventValue(event),
-	          handler: handlers[key],
-	          label: labels[key]
-	        };
-	        return exportToAspen(capsule);
-	      }
-	    };
-	  };
-	  getCurrentHashRoute = function(window) {
-	    var match;
-	    match = window.location.href.match(/#(.*)$/);
-	    if (match) {
-	      return match[1];
-	    } else {
-	      return '';
-	    }
-	  };
-	  getEventHandler = function(fn, key) {
-	    switch (false) {
-	      case !(fn === true):
-	        return exportEvent(key);
-	      case !(isFunction(fn)):
-	        return fn;
-	      default:
-	        return null;
-	    }
-	  };
-	  getEventValue = function(event) {
-	    if (isPopStateEvent(event)) {
-	      return event.state;
-	    } else {
-	      return getCurrentHashRoute(window);
-	    }
-	  };
-	  getLegacyConfig = function() {
-	    return {
-	      exportToAspen: exportToAspen,
-	      getCurrentHashRoute: getCurrentHashRoute,
-	      handler: handlers.hash,
-	      label: labels.hash,
-	      setHash: setHash
-	    };
-	  };
-	  isFunction = function(val) {
-	    return typeof val === 'function';
-	  };
-	  isPopStateEvent = function(event) {
-	    return event && event.state;
-	  };
-	  isString = function(val) {
-	    return Object.prototype.toString.call(val) === '[object String]';
-	  };
-	  isViableHash = function(route) {
-	    return isString(route) && route !== getCurrentHashRoute(window);
-	  };
-	  isViablePath = function(route) {
-	    return isString(route) && route !== window.location.pathname;
-	  };
-	  manageHashRouting = function(route, hashHandler) {
-	    if (isViableHash(route)) {
-	      setHash(route, window);
-	      return setHashMonitoring(hashHandler);
-	    }
-	  };
-	  managePathRouting = function(route, pathHandler) {
-	    if (isViablePath(route)) {
-	      setPath(route);
-	    }
-	    return setPathHandler(pathHandler);
-	  };
-	  refusesHashRouting = function(hash) {
-	    return !hash;
-	  };
-	  Route = function(config) {
-	    var hash, onHashChange, onPathChange, path;
-	    hash = config.hash, onHashChange = config.onHashChange, onPathChange = config.onPathChange, path = config.path;
-	    if (refusesHashRouting(hash) && supportsPushState) {
-	      return managePathRouting(path, onPathChange);
-	    } else {
-	      return manageHashRouting(hash, onHashChange);
-	    }
-	  };
-	  setHash = function(route, window) {
-	    if (window) {
-	      return window.location.hash = changeRouteToHash(route);
-	    }
-	  };
-	  setHashMonitoring = function(hashHandler) {
-	    if (supportsHashChange) {
-	      return window.onhashchange = getEventHandler(hashHandler, 'hash');
-	    } else {
-	      return useIFrameAndPolling();
-	    }
-	  };
-	  setPath = function(path) {
-	    return history.pushState(path, document.title, path);
-	  };
-	  setPathHandler = function(pathHandler) {
-	    return window.onpopstate = getEventHandler(pathHandler, 'pathname');
-	  };
-	  useIFrameAndPolling = function() {
-	    var getLegacySupport;
-	    getLegacySupport = __webpack_require__(21);
-	    useIFrameAndPolling = getLegacySupport(getLegacyConfig());
-	    return useIFrameAndPolling();
-	  };
-	  handlers = {
-	    hash: 'onHashChange',
-	    pathname: 'onPathChange'
-	  };
-	  history = window.history;
-	  labels = {
-	    hash: 'Hash',
-	    pathname: 'Path'
-	  };
-	  supportsHashChange = !!('onhashchange' in window);
-	  supportsPushState = !!(history && history.pushState);
-	  return Route;
-	};
-
-	module.exports = getRouteElement;
-
-
-/***/ },
-/* 21 */
-/***/ function(module, exports) {
-
-	'use strict';
-	var getLegacySupport;
-
-	getLegacySupport = function(config) {
-	  var cachedRoute, checkHash, checkHashInterval, createIFrame, exportHash, exportToAspen, getCurrentHashRoute, handler, interval, isCached, isStale, label, navigateAndExport, navigateTo, pollingStarted, setHash, setIFrameHash, startPolling, useIFrameAndPolling;
-	  exportToAspen = config.exportToAspen, getCurrentHashRoute = config.getCurrentHashRoute, handler = config.handler, label = config.label, setHash = config.setHash;
-	  cachedRoute = null;
-	  checkHashInterval = null;
-	  pollingStarted = false;
-	  checkHash = function(iframe) {
-	    return function() {
-	      var iframeRoute, route;
-	      route = getCurrentHashRoute(window);
-	      if (isCached(route)) {
-	        iframeRoute = getCurrentHashRoute(iframe);
-	        if (!isCached(iframeRoute)) {
-	          return navigateAndExport(iframeRoute, iframe);
-	        }
-	      } else {
-	        return navigateAndExport(route, iframe);
-	      }
-	    };
-	  };
-	  createIFrame = function(route) {
-	    var $iframe, body, iframe;
-	    iframe = document.createElement('iframe');
-	    iframe.src = 'javascript:0';
-	    iframe.style.display = 'none';
-	    iframe.tabIndex = -1;
-	    body = document.body;
-	    $iframe = body.insertBefore(iframe, body.firstChild).contentWindow;
-	    $iframe.document.open().close();
-	    setHash(route, $iframe);
-	    return $iframe;
-	  };
-	  exportHash = function() {
-	    return exportToAspen({
-	      event: getCurrentHashRoute(window, handler, label)
-	    });
-	  };
-	  isCached = function(route) {
-	    return route === cachedRoute;
-	  };
-	  isStale = function(route, iframe) {
-	    return route === getCurrentHashRoute(iframe);
-	  };
-	  navigateTo = function(route, iframe) {
-	    cachedRoute = route;
-	    setHash(route, window);
-	    if (!isStale(route, iframe)) {
-	      return setIFrameHash(iframe, route);
-	    }
-	  };
-	  navigateAndExport = function(route, iframe) {
-	    navigateTo(route, iframe);
-	    return exportHash();
-	  };
-	  setIFrameHash = function(iframe, route) {
-	    iframe.document.open().close();
-	    return setHash(route, iframe);
-	  };
-	  startPolling = function(iframe) {
-	    checkHashInterval = setInterval(checkHash(iframe), interval);
-	    return pollingStarted = true;
-	  };
-	  useIFrameAndPolling = function() {
-	    var iframe;
-	    if (!pollingStarted) {
-	      cachedRoute = getCurrentHashRoute(window);
-	      iframe = createIFrame(cachedRoute);
-	      return startPolling(iframe);
-	    }
-	  };
-	  interval = 50;
-	  return useIFrameAndPolling;
-	};
-
-	module.exports = getLegacySupport;
-
-
-/***/ },
-/* 22 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module) {/*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
@@ -5429,10 +5411,10 @@
 	  !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () { return io; }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	}
 	})();
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)(module)))
 
 /***/ },
-/* 23 */
+/* 26 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {

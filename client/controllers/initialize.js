@@ -7,49 +7,16 @@
 //   -- or to daisychain their commands by emitting to
 //      another publisher/commander (??)
 
+var hashChanges = require('./hashChanges'); // Here or higher?
+
+var log = function (value) {
+  console.log(value);
+};
+
 var initializeControl = function (getCommanders, render, notify) {
-  var commanders = getCommanders();
-  commanders['avatar-clicks'](function (event) {
-    console.log(event);
-    //if (contains(event.target.classList, 'spa-avtr-box')) {
-    //  console.log('avatar');
-    //}
-  });
-  // publishers['keydown'].subscribe(render(interpretKeydown));
-  // publishers['avatarCreation'].subscribe(notify('persist'));
-  // publishers['persist'].subscribe(render(interpretPersistedData));
-
-  /*
-  var getElement = function (elementId) {
-    return document.getElementById(elementId);
-  };
-  var listen = function (eventType, eventHandler) {
-    getElement(id0).addEventListener(eventType, eventHandler);
-  };
-  subscribe(listen, 'keydown', render(interpretKeydown));
-  */
-
-  // subscribe('keydown', render(interpretKeydown));
-
-  /*
-  subscribe('keydown', handleEvent(interpretKeydown));
-  var onToggleSession = function (event) {};
-  var sessionConsole =
-    document.getElementsByClassname('spa-shell-head-acct');
-  sessionConsole.addEventListener('mouseup', onToggleSession);
-  subscribe(events.sessionToggle, toggleSession);
-  */
-
-  /*
-  subscribeElement(getAvatarElements, 'tapNav',       onTapNav      );
-  subscribeElement(getAvatarElements, 'heldstartNav', onHeldstartNav);
-  subscribeElement(getAvatarElements, 'heldmoveNav',  onHeldmoveNav );
-  subscribeElement(getAvatarElements, 'heldendNav',   onHeldendNav  );
-
-  subscribeChatSocket(getChatSocket, 'userupdate', onUserUpdate);
-  subscribeChatSocket(getChatSocket, 'listchange', onListChange);
-  subscribeChatSocket(getChatSocket, 'updatechat', onUserUpdate);
-  */
+  var commanders = getCommanders(hashChanges);
+  commanders['avatar-clicks'](log);
+  commanders['hash-changes'](log);
 
   // avatar :: onSetChatee, onLogout
 
@@ -65,20 +32,9 @@ var initializeControl = function (getCommanders, render, notify) {
   chatChannel.on('userupdate', onUserUpdate);
   chatChannel.on('listchange', onListChange);
   chatChannel.on('updatechat', onUserUpdate);
+
+  sessionConsole.addEventListener('mouseup', onToggleSession);
   */
 }
-
-/*
-var onKeyDown      = function (event) {};
-var onTapNav       = function (event) {
-  render(getModel(getAction(event)));
-};
-var onHeldstartNav = function (event) {};
-var onHeldmoveNav  = function (event) {};
-var onHeldendNav   = function (event) {};
-var onUserUpdate   = function (user)  {};
-var onListChange   = function (users) {};
-var onChatUpdate   = function (value) {};
-*/
 
 module.exports = initializeControl;
