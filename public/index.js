@@ -48,7 +48,7 @@
 	var initialize = __webpack_require__(1);
 	initialize({ nodeId: 'spa' });
 
-	var socketClient = __webpack_require__(13);
+	var socketClient = __webpack_require__(14);
 	if (!!socketClient) { console.log('SOCKET CLIENT'); }
 
 
@@ -64,17 +64,13 @@
 
 	//var initializeView      = require('../views/createChatConsole');
 	var createSpa      = __webpack_require__(2);
-	var initializeView = __webpack_require__(11);
+	var initializeView = __webpack_require__(12);
 
 	function initialize(config) {
 	  var nodeId = config.nodeId;
-
 	  var viewModel = createSpa();
-
-	  //var attachmentPoint = document.getElementById(nodeId);
 	  var attachmentPoint = document.getElementsByTagName('body')[0];
 
-	  //function initializeView(attachToDom, viewModel) {
 	  initializeView(
 	    function attachToDom(element) {
 	      attachmentPoint.appendChild(element);
@@ -283,25 +279,13 @@
 	var createComponent     = __webpack_require__(7);
 	var _createDivComponent = __webpack_require__(3);
 	var DIV                 = __webpack_require__(5).DIV;
-	var TEXT                = __webpack_require__(8);
-	var SUBMIT              = __webpack_require__(10);
+	var SIZER               = __webpack_require__(8);
 
 	var CHAT      = _createDivComponent('spa-chat');
 	var CHAT_HEAD = _createDivComponent('spa-chat-head');
 	var TOGGLE    = _createDivComponent('spa-chat-head-toggle');
 	var TITLE     = _createDivComponent('spa-chat-head-title');
 	var CLOSER    = _createDivComponent('spa-chat-closer');
-	var LIST      = _createDivComponent('spa-chat-list');
-	var BOX       = _createDivComponent('spa-chat-list-box');
-	var NOTE      = _createDivComponent('spa-chat-list-note');
-	var MSG       = _createDivComponent('spa-chat-msg');
-	var MSG_LOG   = _createDivComponent('spa-chat-msg-log');
-	var MSG_IN    = _createDivComponent('spa-chat-msg-in');
-
-	//var SIZER = _createDivComponent('spa-chat-sizer');
-
-	var MSG_FORM = createComponent('form', 'spa-chat-msg-form');
-	var MSG_SEND = _createDivComponent('spa-chat-msg-send');
 
 	// slider
 	//   openTime        : 250 /* ms */
@@ -321,84 +305,49 @@
 	// slider_closed_px : 0
 	// slider_opened_px : 0
 
-	var OPEN   = 'open';
-	var CLOSED = 'closed';
-	var HIDDEN = 'hidden';
+	var SliderState = {
+	  OPEN   : 'open',
+	  CLOSED : 'closed',
+	  HIDDEN : 'hidden'
+	};
 
-	function getSliderHeight(state) {
-	  switch (state) {
-	    case OPEN: return openHeight;
-	    case HIDDEN: return 0;
-	    case CLOSED: return closedHeight;
+	var getSliderHeight = function (sliderState) {
+	  switch (sliderState) {
+	    case SliderState.OPEN:   return openHeight;
+	    case SliderState.HIDDEN: return 0;
+	    case SliderState.CLOSED: return closedHeight;
 	    default: throw new Error('invalid slider state');
 	  }
-	}
+	};
 
-	function getAnimationTime(state) {
-	  switch (state) {
-	    case OPEN: return openTime;
-	    case HIDDEN: return openTime;
-	    case CLOSED: return closedTime;
+	var getAnimationTime = function (sliderState) {
+	  switch (sliderState) {
+	    case SliderState.OPEN:   return openTime;
+	    case SliderState.HIDDEN: return openTime;
+	    case SliderState.CLOSED: return closedTime;
 	    default: throw new Error('invalid slider state');
 	  }
-	}
+	};
 
-	function getSliderTitle(state) {
-	  switch (state) {
-	    case OPEN: return openTitle;
-	    case HIDDEN: return '';
-	    case CLOSED: return closedTitle;
+	var getSliderTitle = function (sliderState) {
+	  switch (sliderState) {
+	    case SliderState.OPEN:   return openTitle;
+	    case SliderState.HIDDEN: return '';
+	    case SliderState.CLOSED: return closedTitle;
 	    default: throw new Error('invalid slider state');
 	  }
-	}
+	};
 
-	function getSliderGlyph(state) {
-	  switch (state) {
-	    case OPEN: return '=';
-	    case HIDDEN: return '+';
-	    case CLOSED: return '+';
+	var getSliderGlyph = function (sliderState) {
+	  switch (sliderState) {
+	    case SliderState.OPEN:   return '=';
+	    case SliderState.HIDDEN: return '+';
+	    case SliderState.CLOSED: return '+';
 	    default: throw new Error('invalid slider state');
 	  }
-	}
+	};
 
-	function getListName(user) {
-	  return DIV(
-	    {
-	      classes : 'spa-chat-list-name',
-	      attributes : { 'data-id': user.id }
-	    },
-	    user.name);
-	}
-
-	var CHAT_CONNECTION = 'chat-connection';
-	var DEPARTURE_ALERT = 'departure-alert';
-	var ME = 'me';
-	var MESSAGE = 'message';
-
-	function getMessage(value) {
-	  switch (value.type) {
-	    case CHAT_CONNECTION:
-	      return DIV(
-	        { classes: 'spa-chat-msg-log-alert' },
-	        'Now chatting with ' + value.user);
-	    case ME:
-	      return DIV(
-	        { classes: 'spa-chat-msg-log-me' },
-	        value.user + ': ' + value.message);
-	    case MESSAGE:
-	      return DIV(
-	        { classes: 'spa-chat-msg-log-msg' },
-	        value.user + ': ' + value.message);
-	    case DEPARTURE_ALERT:
-	      return DIV(
-	        { classes: 'spa-chat-msg-log-alert' },
-	        value.user + 'has left the chat');
-	    default:
-	      throw new Error('invalid message state');
-	  }
-	}
-
-	module.exports = function createChatConsole(config) {
+	var createChatConsole = function (config) {
 	  //var chatConnectionMaybe = config.chatConnectionMaybe;
 	  //var title = chatConnectionMaybe.chatConnection
 	  //  ? 'Chat with ' + chatConnectionMaybe.chatConnection.user.name
@@ -406,12 +355,12 @@
 	  //var sliderState = config.sliderState;
 	  //var sliderGlyph = getSliderGlyph(sliderState);
 	  var title = 'Chat';
-	  var sliderGlyph = getSliderGlyph(OPEN);
+	  var sliderGlyph = getSliderGlyph(SliderState.OPEN);
 
 	  //var users = config.users;
-	  //var messages = config.messages;
+	  //var packets = config.packets;
 	  var users = [];
-	  var messages = [];
+	  var packets = [];
 
 	  return DIV(
 	    {
@@ -427,25 +376,10 @@
 	        sliderGlyph),
 	      TITLE(title)),
 	    CLOSER('x'),
-	    DIV(
-	      {
-	         classes : { 'spa-chat-sizer': true },
-	         style   : { height: '216.216217041016px' }
-	      },
-	      LIST(
-	        BOX(
-	          //users.map(getListName))),
-	          NOTE('To chat alone is the fate of all greate souls...\n\nNo one is online.'))),
-	      MSG(
-	        MSG_LOG(
-	          messages.map(getMessage)),
-	        MSG_IN(
-	          MSG_FORM(
-	            null,
-	            TEXT(),
-	            SUBMIT({ style: { display: 'none' }}),
-	            MSG_SEND('send'))))));
+	    SIZER({ packets: packets }));
 	};
+
+	module.exports = createChatConsole;
 
 
 /***/ },
@@ -507,13 +441,119 @@
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	var createComponent     = __webpack_require__(7);
+	var _createDivComponent = __webpack_require__(3);
+	var DIV                 = __webpack_require__(5).DIV;
+	var SUBMIT              = __webpack_require__(9);
+	var TEXT                = __webpack_require__(11);
 
-	module.exports = __webpack_require__(9)('text');
+	var BOX      = _createDivComponent('spa-chat-list-box');
+	var LIST     = _createDivComponent('spa-chat-list');
+	var NOTE     = _createDivComponent('spa-chat-list-note');
+	var MSG      = _createDivComponent('spa-chat-msg');
+	var MSG_LOG  = _createDivComponent('spa-chat-msg-log');
+	var MSG_IN   = _createDivComponent('spa-chat-msg-in');
+	var MSG_FORM = createComponent('form', 'spa-chat-msg-form');
+	var MSG_SEND = _createDivComponent('spa-chat-msg-send');
+
+	var PacketState = {
+	  CHAT_CONNECTION : 'chat-connection',
+	  DEPARTURE_ALERT : 'departure-alert',
+	  ME              : 'me',
+	  MESSAGE         : 'message'
+	};
+
+	var getListName = function (user, selected) {
+	  var classes = selected
+	    ? {
+	        'spa-chat-list-name' : true,
+	        'spa-x-select'       : true
+	      }
+	    : { 'spa-chat-list-name': true };
+
+	  return DIV(
+	    {
+	      classes    : classes,
+	      attributes : { 'data-id': user.id }
+	    },
+	    user.name);
+	};
+
+	var getMessage = function (packet) {
+	  switch (packet.type) {
+	    case PacketState.CHAT_CONNECTION:
+	      return DIV(
+	        { classes: { 'spa-chat-msg-log-alert': true }},
+	        'Now chatting with ' + packet.userName);
+	    case PacketState.ME:
+	      return DIV(
+	        { classes: { 'spa-chat-msg-log-me': true }},
+	        packet.userName + ': ' + packet.message);
+	    case PacketState.MESSAGE:
+	      return DIV(
+	        { classes: { 'spa-chat-msg-log-msg': true }},
+	        packet.userName + ': ' + packet.message);
+	    case PacketState.DEPARTURE_ALERT:
+	      return DIV(
+	        { classes: { 'spa-chat-msg-log-alert': true }},
+	        packet.userName + ' has left the chat');
+	    default:
+	      throw new Error('invalid message state');
+	  }
+	}
+
+	var SIZER = function (config) {
+	  var packets = config.packets;
+	  var users = config.users;
+
+	  packets = [];
+	  packets.push({ type: PacketState.CHAT_CONNECTION, userName: 'CharlesV'                                 });
+	  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Hello, world."      });
+	  packets.push({ type: PacketState.ME,              userName: 'HenryVIII', message: "Hello, world."      });
+	  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Guten tag, Welt."   });
+	  packets.push({ type: PacketState.ME,              userName: 'HenryVIII', message: "Bonjour, le monde." });
+	  packets.push({ type: PacketState.MESSAGE,         userName: 'CharlesV',  message: "Bonjour, le monde." });
+
+	  users = [];
+	  users.push({ id: 0, name: 'TheFonze'   });
+	  users.push({ id: 1, name: 'RalphNader' });
+	  users.push({ id: 2, name: 'DarthVader' });
+
+	  return DIV(
+	    {
+	        classes : { 'spa-chat-sizer': true },
+	        style   : { height: '216.216217041016px' }
+	    },
+	    LIST(
+	      BOX(
+	        users.length === 0
+	          ? NOTE('To chat alone is the fate of all greate souls...\n\nNo one is online.')
+	          : users.map(function (user, index) { return getListName(user, index === 0); }))),
+	    MSG(
+	      MSG_LOG(
+	        packets.map(getMessage)),
+	      MSG_IN(
+	        MSG_FORM(
+	          null,
+	          TEXT(),
+	          SUBMIT({ style: { display: 'none' }}),
+	          MSG_SEND('send')))));
+	};
+
+	module.exports = SIZER;
 
 
 /***/ },
 /* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = __webpack_require__(10)('submit');
+
+
+/***/ },
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -569,19 +609,19 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(9)('submit');
+	module.exports = __webpack_require__(10)('text');
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createElement = __webpack_require__(12).createElement;
+	var createElement = __webpack_require__(13).createElement;
 
 	function initializeView(attachToDom, viewModel) {
 	  attachToDom(createElement(viewModel));
@@ -591,7 +631,7 @@
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	function attachElement(parent, element) {
@@ -873,7 +913,7 @@
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module) {/*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
@@ -4749,10 +4789,10 @@
 	  !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () { return io; }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	}
 	})();
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)(module)))
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {

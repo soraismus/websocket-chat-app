@@ -4,4 +4,4 @@ var SessionState = {
   active   : 'active'
 };
 
-module.exports = Session;
+module.exports = SessionState;

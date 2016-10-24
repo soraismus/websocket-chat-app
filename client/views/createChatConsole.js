@@ -1,25 +1,13 @@
 var createComponent     = require('./ribosome/createComponent');
 var _createDivComponent = require('./ribosome/_createDivComponent');
 var DIV                 = require('./ribosome/elements').DIV;
-var TEXT                = require('./ribosome/TEXT');
-var SUBMIT              = require('./ribosome/SUBMIT');
+var SIZER               = require('./SIZER');
 
 var CHAT      = _createDivComponent('spa-chat');
 var CHAT_HEAD = _createDivComponent('spa-chat-head');
 var TOGGLE    = _createDivComponent('spa-chat-head-toggle');
 var TITLE     = _createDivComponent('spa-chat-head-title');
 var CLOSER    = _createDivComponent('spa-chat-closer');
-var LIST      = _createDivComponent('spa-chat-list');
-var BOX       = _createDivComponent('spa-chat-list-box');
-var NOTE      = _createDivComponent('spa-chat-list-note');
-var MSG       = _createDivComponent('spa-chat-msg');
-var MSG_LOG   = _createDivComponent('spa-chat-msg-log');
-var MSG_IN    = _createDivComponent('spa-chat-msg-in');
-
-//var SIZER = _createDivComponent('spa-chat-sizer');
-
-var MSG_FORM = createComponent('form', 'spa-chat-msg-form');
-var MSG_SEND = _createDivComponent('spa-chat-msg-send');
 
 // slider
 //   openTime        : 250 /* ms */
@@ -39,84 +27,49 @@ var MSG_SEND = _createDivComponent('spa-chat-msg-send');
 // slider_closed_px : 0
 // slider_opened_px : 0
 
-var OPEN   = 'open';
-var CLOSED = 'closed';
-var HIDDEN = 'hidden';
+var SliderState = {
+  OPEN   : 'open',
+  CLOSED : 'closed',
+  HIDDEN : 'hidden'
+};
 
-function getSliderHeight(state) {
-  switch (state) {
-    case OPEN: return openHeight;
-    case HIDDEN: return 0;
-    case CLOSED: return closedHeight;
+var getSliderHeight = function (sliderState) {
+  switch (sliderState) {
+    case SliderState.OPEN:   return openHeight;
+    case SliderState.HIDDEN: return 0;
+    case SliderState.CLOSED: return closedHeight;
     default: throw new Error('invalid slider state');
   }
-}
+};
 
-function getAnimationTime(state) {
-  switch (state) {
-    case OPEN: return openTime;
-    case HIDDEN: return openTime;
-    case CLOSED: return closedTime;
+var getAnimationTime = function (sliderState) {
+  switch (sliderState) {
+    case SliderState.OPEN:   return openTime;
+    case SliderState.HIDDEN: return openTime;
+    case SliderState.CLOSED: return closedTime;
     default: throw new Error('invalid slider state');
   }
-}
+};
 
-function getSliderTitle(state) {
-  switch (state) {
-    case OPEN: return openTitle;
-    case HIDDEN: return '';
-    case CLOSED: return closedTitle;
+var getSliderTitle = function (sliderState) {
+  switch (sliderState) {
+    case SliderState.OPEN:   return openTitle;
+    case SliderState.HIDDEN: return '';
+    case SliderState.CLOSED: return closedTitle;
     default: throw new Error('invalid slider state');
   }
-}
+};
 
-function getSliderGlyph(state) {
-  switch (state) {
-    case OPEN: return '=';
-    case HIDDEN: return '+';
-    case CLOSED: return '+';
+var getSliderGlyph = function (sliderState) {
+  switch (sliderState) {
+    case SliderState.OPEN:   return '=';
+    case SliderState.HIDDEN: return '+';
+    case SliderState.CLOSED: return '+';
     default: throw new Error('invalid slider state');
   }
-}
+};
 
-function getListName(user) {
-  return DIV(
-    {
-      classes : 'spa-chat-list-name',
-      attributes : { 'data-id': user.id }
-    },
-    user.name);
-}
-
-var CHAT_CONNECTION = 'chat-connection';
-var DEPARTURE_ALERT = 'departure-alert';
-var ME = 'me';
-var MESSAGE = 'message';
-
-function getMessage(value) {
-  switch (value.type) {
-    case CHAT_CONNECTION:
-      return DIV(
-        { classes: 'spa-chat-msg-log-alert' },
-        'Now chatting with ' + value.user);
-    case ME:
-      return DIV(
-        { classes: 'spa-chat-msg-log-me' },
-        value.user + ': ' + value.message);
-    case MESSAGE:
-      return DIV(
-        { classes: 'spa-chat-msg-log-msg' },
-        value.user + ': ' + value.message);
-    case DEPARTURE_ALERT:
-      return DIV(
-        { classes: 'spa-chat-msg-log-alert' },
-        value.user + 'has left the chat');
-    default:
-      throw new Error('invalid message state');
-  }
-}
-
-module.exports = function createChatConsole(config) {
+var createChatConsole = function (config) {
   //var chatConnectionMaybe = config.chatConnectionMaybe;
   //var title = chatConnectionMaybe.chatConnection
   //  ? 'Chat with ' + chatConnectionMaybe.chatConnection.user.name
@@ -124,12 +77,12 @@ module.exports = function createChatConsole(config) {
   //var sliderState = config.sliderState;
   //var sliderGlyph = getSliderGlyph(sliderState);
   var title = 'Chat';
-  var sliderGlyph = getSliderGlyph(OPEN);
+  var sliderGlyph = getSliderGlyph(SliderState.OPEN);
 
   //var users = config.users;
-  //var messages = config.messages;
+  //var packets = config.packets;
   var users = [];
-  var messages = [];
+  var packets = [];
 
   return DIV(
     {
@@ -145,22 +98,7 @@ module.exports = function createChatConsole(config) {
         sliderGlyph),
       TITLE(title)),
     CLOSER('x'),
-    DIV(
-      {
-         classes : { 'spa-chat-sizer': true },
-         style   : { height: '216.216217041016px' }
-      },
-      LIST(
-        BOX(
-          //users.map(getListName))),
-          NOTE('To chat alone is the fate of all greate souls...\n\nNo one is online.'))),
-      MSG(
-        MSG_LOG(
-          messages.map(getMessage)),
-        MSG_IN(
-          MSG_FORM(
-            null,
-            TEXT(),
-            SUBMIT({ style: { display: 'none' }}),
-            MSG_SEND('send'))))));
+    SIZER({ packets: packets }));
 };
+
+module.exports = createChatConsole;
