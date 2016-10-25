@@ -247,7 +247,19 @@
 
 	  return {
 	    'avatar-clicks' : avatarClicks.subscribe,
-	    'hash-changes'  : hashChanges.subscribe
+	    'hash-changes'  : function (handleHashFragment) {
+	      hashChanges.subscribe(function (capsule) {
+	        handleHashFragment(capsule.event.substr(1));
+	      });
+	    }
+	    //'hash-changes'  : function (handleEvent) {
+	    //  hashChanges.subscribe(handleEvent); 
+	    //}
+	    //'hash-changes'  : function (handleHashFragment) {
+	    //   hashChanges.subscribe(function (capsule) {
+	    //     handleHashFragment(capsule.event.substr(1));
+	    //   });
+	    // }
 	  };
 	};
 

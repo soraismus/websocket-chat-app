@@ -22,7 +22,11 @@ var getPublishers = function (hashChanges) {
 
   return {
     'avatar-clicks' : avatarClicks.subscribe,
-    'hash-changes'  : hashChanges.subscribe
+    'hash-changes'  : function (handleHashFragment) {
+      hashChanges.subscribe(function (capsule) {
+        handleHashFragment(capsule.event.substr(1));
+      });
+    }
   };
 };
 
