@@ -17,6 +17,9 @@ var initializeControl = function (getCommanders, render, notify) {
   var commanders = getCommanders(hashChanges);
   commanders['avatar-clicks'](log);
   commanders['hash-changes'](log);
+  commanders['hash-changes'](render(function (hashFragment) {
+    return { name: 'setSliderState', state: hashFragment };
+  }));
 
   // avatar :: onSetChatee, onLogout
 

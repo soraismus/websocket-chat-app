@@ -1,9 +1,11 @@
 var _App = require('../models/actions/_App');
 
 var getAppState = function (command, controlConfig) {
-  var command = command.name;
-  var appSate = controlConfig.appState;
-  switch (command) {
+  var action = command.name;
+  var appState = controlConfig.appState;
+  switch (action) {
+    case 'setSliderState':
+      return _App.setSliderState(appState, command.state);
     case 'addChar':
       return _App.addChar(appState, command.char);
     case 'completeWord':
@@ -13,7 +15,7 @@ var getAppState = function (command, controlConfig) {
     case 'submit':
       return _App.submit(appState, controlConfig.transform);
     default:
-      //return _App[command](appState);
+      //return _App[action](appState);
       return appState;
   }
 };

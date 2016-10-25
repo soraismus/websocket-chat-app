@@ -15,8 +15,8 @@ var CONTENT    = _createDivComponent('spa-shell-main-content');
 var FOOT       = _createDivComponent('spa-shell-foot');
 var MODAL      = _createDivComponent('spa-shell-modal');
 
-var getHashRoute = function (chatConsoleState) {
-  switch (chatConsoleState) {
+var getHashRoute = function (sliderState) {
+  switch (sliderState) {
     case 'closed': return '/closed';
     default:       return '/open';
   }
@@ -24,7 +24,7 @@ var getHashRoute = function (chatConsoleState) {
 
 module.exports = function createSpa(config) {
   Route({
-    hash         : getHashRoute(config.chatConsoleState),
+    hash         : getHashRoute(config.sliderState),
     onHashChange : true
   });
 
@@ -58,8 +58,8 @@ module.exports = function createSpa(config) {
    FOOT(),
    MODAL(),
    createChatConsole({
-     chatConsoleState : config.chatConsoleState,
-     packets          : config.packets,
-     users            : config.users
+     sliderState : config.sliderState,
+     packets     : config.packets,
+     users       : config.users
    }));
 };

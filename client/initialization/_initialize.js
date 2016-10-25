@@ -21,13 +21,13 @@ users.push({ id: 0, name: 'TheFonze'   });
 users.push({ id: 1, name: 'RalphNader' });
 users.push({ id: 2, name: 'DarthVader' });
 
-var chatConsoleState = 'open';
+var sliderState = 'open';
 
 var config = {
-  chatConsoleState : chatConsoleState,
-  nodeId           : 'spa',
-  packets          : packets,
-  users            : users
+  sliderState : sliderState,
+  nodeId      : 'spa',
+  packets     : packets,
+  users       : users
 };
 
 initialize(config);

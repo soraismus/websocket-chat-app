@@ -78,8 +78,8 @@ var createChatConsole = function (config) {
   //var sliderGlyph = getSliderGlyph(sliderState);
   var title = 'Chat';
   var sliderGlyph = getSliderGlyph(SliderState.OPEN);
-  var chatConsoleState = config.chatConsoleState;
-  var height = chatConsoleState === SliderState.OPEN
+  var sliderState = config.sliderState;
+  var height = sliderState === SliderState.OPEN
     ? 243.243244171143
     : 26.6666;
 

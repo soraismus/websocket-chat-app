@@ -67,13 +67,13 @@
 	users.push({ id: 1, name: 'RalphNader' });
 	users.push({ id: 2, name: 'DarthVader' });
 
-	var chatConsoleState = 'open';
+	var sliderState = 'open';
 
 	var config = {
-	  chatConsoleState : chatConsoleState,
-	  nodeId           : 'spa',
-	  packets          : packets,
-	  users            : users
+	  sliderState : sliderState,
+	  nodeId      : 'spa',
+	  packets     : packets,
+	  users       : users
 	};
 
 	initialize(config);
@@ -156,6 +156,9 @@
 	  var commanders = getCommanders(hashChanges);
 	  commanders['avatar-clicks'](log);
 	  commanders['hash-changes'](log);
+	  commanders['hash-changes'](render(function (hashFragment) {
+	    return { name: 'setSliderState', state: hashFragment };
+	  }));
 
 	  // avatar :: onSetChatee, onLogout
 
@@ -252,14 +255,6 @@
 	        handleHashFragment(capsule.event.substr(1));
 	      });
 	    }
-	    //'hash-changes'  : function (handleEvent) {
-	    //  hashChanges.subscribe(handleEvent); 
-	    //}
-	    //'hash-changes'  : function (handleHashFragment) {
-	    //   hashChanges.subscribe(function (capsule) {
-	    //     handleHashFragment(capsule.event.substr(1));
-	    //   });
-	    // }
 	  };
 	};
 
@@ -278,13 +273,14 @@
 
 	// "Global" state, so there can be only one.
 	// `modifyElement` is always called, so may be overly slow.
+
 	var render = function (viewModel, getAttachmentPoint, controlConfig) {
 	  var rootElement = getAttachmentPoint();
 	  var _viewModel = viewModel;
 	  return function (mapEventToCommand) {
 	    return function (event) {
 	      var appState = getAppState(
-	        mapEventToComamnd(event),
+	        mapEventToCommand(event),
 	        controlConfig);
 	      var newViewModel = getViewModel(appState);
 	      modifyElement(rootElement, diff(newViewModel, _viewModel));
@@ -448,9 +444,11 @@
 	var _App = __webpack_require__(9);
 
 	var getAppState = function (command, controlConfig) {
-	  var command = command.name;
-	  var appSate = controlConfig.appState;
-	  switch (command) {
+	  var action = command.name;
+	  var appState = controlConfig.appState;
+	  switch (action) {
+	    case 'setSliderState':
+	      return _App.setSliderState(appState, command.state);
 	    case 'addChar':
 	      return _App.addChar(appState, command.char);
 	    case 'completeWord':
@@ -460,7 +458,7 @@
 	    case 'submit':
 	      return _App.submit(appState, controlConfig.transform);
 	    default:
-	      //return _App[command](appState);
+	      //return _App[action](appState);
 	      return appState;
 	  }
 	};
@@ -472,9 +470,28 @@
 /* 9 */
 /***/ function(module, exports) {
 
-	var _App = {};
+	var setSliderState = function (appState, sliderState) {
+	  return {
+	    sliderState      : sliderState,
+	    nodeId           : appState.nodeId,
+	    packets          : appState.packets,
+	    users            : appState.users
+	  };
+	};
 
-	module.exports = _App;
+	var toggleSliderState = function (appState, sliderState) {
+	  return {
+	    sliderState      : sliderState,
+	    nodeId           : appState.nodeId,
+	    packets          : appState.packets,
+	    users            : appState.users
+	  };
+	};
+
+	module.exports = {
+	  setSliderState    : setSliderState,
+	  toggleSliderState : toggleSliderState
+	};
 
 
 /***/ },
@@ -498,8 +515,8 @@
 	var FOOT       = _createDivComponent('spa-shell-foot');
 	var MODAL      = _createDivComponent('spa-shell-modal');
 
-	var getHashRoute = function (chatConsoleState) {
-	  switch (chatConsoleState) {
+	var getHashRoute = function (sliderState) {
+	  switch (sliderState) {
 	    case 'closed': return '/closed';
 	    default:       return '/open';
 	  }
@@ -507,7 +524,7 @@
 
 	module.exports = function createSpa(config) {
 	  Route({
-	    hash         : getHashRoute(config.chatConsoleState),
+	    hash         : getHashRoute(config.sliderState),
 	    onHashChange : true
 	  });
 
@@ -541,9 +558,9 @@
 	   FOOT(),
 	   MODAL(),
 	   createChatConsole({
-	     chatConsoleState : config.chatConsoleState,
-	     packets          : config.packets,
-	     users            : config.users
+	     sliderState : config.sliderState,
+	     packets     : config.packets,
+	     users       : config.users
 	   }));
 	};
 
@@ -765,8 +782,8 @@
 	  //var sliderGlyph = getSliderGlyph(sliderState);
 	  var title = 'Chat';
 	  var sliderGlyph = getSliderGlyph(SliderState.OPEN);
-	  var chatConsoleState = config.chatConsoleState;
-	  var height = chatConsoleState === SliderState.OPEN
+	  var sliderState = config.sliderState;
+	  var height = sliderState === SliderState.OPEN
 	    ? 243.243244171143
 	    : 26.6666;
 
